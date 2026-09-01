@@ -229,7 +229,7 @@ class ScrapeAgentApp:
         # Quick Presets
         tk.Label(options_row, text="Presets:", font=("Segoe UI", 9, "bold"), fg=t["muted"], bg=t["surface"]).pack(side="left", padx=(0, 6))
         self.preset_var = tk.StringVar(value="Select Preset...")
-        presets = ["Books to Scrape", "Quotes to Scrape", "Hacker News"]
+        presets = ["AFAD Son Depremler", "Books to Scrape", "Quotes to Scrape", "Hacker News"]
         preset_dropdown = ttk.Combobox(options_row, values=presets, textvariable=self.preset_var, state="readonly", width=18)
         preset_dropdown.pack(side="left")
         preset_dropdown.bind("<<ComboboxSelected>>", self.on_preset_change)
@@ -376,6 +376,7 @@ class ScrapeAgentApp:
         """Populate URL based on selected preset."""
         choice = self.preset_var.get()
         presets = {
+            "AFAD Son Depremler": "https://deprem.afad.gov.tr/last-earthquakes.html",
             "Books to Scrape": "https://books.toscrape.com/",
             "Quotes to Scrape": "https://quotes.toscrape.com/",
             "Hacker News": "https://news.ycombinator.com/",
@@ -432,7 +433,7 @@ class ScrapeAgentApp:
                 resp = fetch_page(url)
                 raw_html = resp.text
 
-            self.root.after(0, lambda: self.status_label.config(text="Analyzing DOM patterns..."))
+            self.root.after(0, lambda: self.status_label.config(text="Analyzing DOM patterns & data tables..."))
             soup = clean_html(raw_html)
 
             # Check bot blocks
@@ -467,8 +468,8 @@ class ScrapeAgentApp:
 
     def _on_scrape_empty(self, url: str):
         """Handle no records detected."""
-        self.status_label.config(text="No structured data clusters found on page.")
-        messagebox.showinfo("No Records", "No recurring item cards or metadata were detected on this page.")
+        self.status_label.config(text="No structured data clusters or tables found on page.")
+        messagebox.showinfo("No Records", "No recurring item cards or tables were detected on this page.")
 
     def _on_scrape_error(self, error: Exception):
         """Handle scrape failure."""
@@ -483,32 +484,78 @@ class ScrapeAgentApp:
         self.status_badge.config(text="● READY", fg=THEME["success"])
 
     def render_table(self, records: list[dict]):
-        """Populate treeview table."""
+        """Populate treeview table dynamically adapting to any dataset columns."""
         for item in self.tree.get_children():
             self.tree.delete(item)
 
-        for i, row in enumerate(records, 1):
-            title = row.get("title") or row.get("name") or "No Title"
-            price = f"{row.get('currency', '')}{row.get('price', '')}" if "price" in row else "-"
-            rating = f"{'*' * int(row['rating'])}" if "rating" in row and str(row["rating"]).isdigit() else str(row.get("rating", "-"))
-            avail = row.get("availability") or ("In stock" if "stock_count" in row else "-")
-            url = row.get("url", "")
-            self.tree.insert("", tk.END, values=(i, title, price, rating, avail, url))
+        if not records:
+            self.table_title.config(text="EXTRACTED DATASETS (0)")
+            return
 
+        # Determine all unique columns across records
+        all_keys = list(dict.fromkeys(k for row in records for k in row.keys()))
+
+        # Remove redundant helper 'title' if 'Yer' or other specific column is present
+        if "title" in all_keys and any(k in all_keys for k in ["Yer", "name", "headline", "item_name"]):
+            all_keys.remove("title")
+
+        cols = ["#"] + all_keys
+        self.active_cols = cols
+
+        # Configure dynamic headings and column widths
+        self.tree.config(columns=cols)
+        for col in cols:
+            self.tree.heading(col, text=col)
+            col_l = col.lower()
+            if col == "#":
+                self.tree.column(col, width=45, minwidth=35, anchor="center")
+            elif "url" in col_l or "link" in col_l:
+                self.tree.column(col, width=280, minwidth=180, anchor="w")
+            elif any(d in col_l for d in ["tarih", "date", "time"]):
+                self.tree.column(col, width=160, minwidth=120, anchor="center")
+            elif any(y in col_l for y in ["yer", "title", "name", "description", "headline"]):
+                self.tree.column(col, width=260, minwidth=180, anchor="w")
+            elif any(m in col_l for m in ["büyüklük", "mag", "price", "rating", "derinlik", "enlem", "boylam", "tip"]):
+                self.tree.column(col, width=95, minwidth=70, anchor="center")
+            else:
+                self.tree.column(col, width=120, minwidth=80, anchor="center")
+
+        self._insert_rows(records)
         self.table_title.config(text=f"EXTRACTED DATASETS ({len(records)})")
 
+    def _insert_rows(self, records: list[dict]):
+        """Insert records into treeview according to active_cols."""
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+        cols = getattr(self, "active_cols", None)
+        if not cols:
+            return
+
+        for i, row in enumerate(records, 1):
+            values = [i]
+            for col in cols[1:]:
+                val = row.get(col, "")
+                if col == "rating" and str(val).isdigit():
+                    val = "*" * int(val)
+                elif col == "price" and "currency" in row:
+                    val = f"{row.get('currency', '')}{val}"
+                values.append(val)
+            self.tree.insert("", tk.END, values=values)
+
     def filter_table(self):
-        """Filter table rows by live keyword."""
+        """Filter table rows by live keyword without rebuilding headings."""
         query = self.filter_entry.get().strip().lower()
         if not query:
-            self.render_table(self.current_records)
+            self._insert_rows(self.current_records)
+            self.table_title.config(text=f"EXTRACTED DATASETS ({len(self.current_records)})")
             return
 
         filtered = [
             r for r in self.current_records
             if any(query in str(v).lower() for v in r.values())
         ]
-        self.render_table(filtered)
+        self._insert_rows(filtered)
         self.table_title.config(text=f"EXTRACTED DATASETS ({len(filtered)} of {len(self.current_records)})")
 
     def save_csv(self):

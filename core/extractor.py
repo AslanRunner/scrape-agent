@@ -192,11 +192,92 @@ class UniversalExtractor:
 
         return []
 
+    def extract_tables(self, soup: BeautifulSoup) -> list[dict]:
+        """
+        Extract structured records from HTML <table> elements (e.g. government,
+        earthquake, financial, and statistical tables).
+        """
+        tables = soup.find_all("table")
+        candidate_tables = []
+
+        for table in tables:
+            rows = table.find_all("tr")
+            if len(rows) < 3:
+                continue
+
+            # 1. Identify headers from <thead> or first <tr>
+            headers = []
+            header_row = table.find("thead")
+            if header_row:
+                th_tags = header_row.find_all(["th", "td"])
+                headers = [re.sub(r"\s+", " ", th.get_text(strip=True)) for th in th_tags if th.get_text(strip=True)]
+
+            data_rows = rows
+            if not headers:
+                first_row = rows[0]
+                th_tags = first_row.find_all(["th", "td"])
+                headers = [re.sub(r"\s+", " ", th.get_text(strip=True)) for th in th_tags if th.get_text(strip=True)]
+                data_rows = rows[1:]
+
+            if not headers:
+                continue
+
+            # Ensure unique column names
+            clean_headers = []
+            seen = {}
+            for h in headers:
+                count = seen.get(h, 0)
+                clean_name = f"{h}_{count + 1}" if count > 0 else h
+                clean_headers.append(clean_name)
+                seen[h] = count + 1
+
+            table_records = []
+            for row in data_rows:
+                cells = row.find_all("td")
+                if not cells or len(cells) < max(2, len(clean_headers) // 2):
+                    continue
+
+                record = {}
+                for idx, cell in enumerate(cells):
+                    if idx < len(clean_headers):
+                        val = re.sub(r"\s+", " ", cell.get_text(strip=True))
+                        record[clean_headers[idx]] = val
+
+                    # Extract link if present in cell
+                    link_tag = cell.find("a")
+                    if link_tag and "href" in link_tag.attrs:
+                        full_link = urljoin(self.base_url, link_tag["href"])
+                        if "url" not in record:
+                            record["url"] = full_link
+
+                if record:
+                    # Provide a friendly 'title' alias if missing for universal consumers
+                    if "title" not in record:
+                        preferred_name = record.get("Yer") or record.get("Name") or record.get("Item") or record.get(clean_headers[0])
+                        if preferred_name:
+                            record["title"] = preferred_name
+                    table_records.append(record)
+
+            if len(table_records) >= 3:
+                candidate_tables.append(table_records)
+
+        if candidate_tables:
+            candidate_tables.sort(key=len, reverse=True)
+            return candidate_tables[0]
+
+        return []
+
     def extract_all(self, soup: BeautifulSoup) -> list[dict]:
         """
         Discover items and extract structured records.
-        Prioritizes repeating catalog items, then falls back to single-entity metadata.
+        Prioritizes HTML data tables and repeating catalog cards, then falls back to single-entity metadata.
         """
+        # 1. First inspect HTML tables (e.g. AFAD Son Depremler, financial, statistics)
+        table_records = self.extract_tables(soup)
+        if len(table_records) >= 3:
+            return table_records
+
+        # 2. Check for repeating item cards
         items = self.find_repeating_items(soup)
         results = []
         for item in items:
@@ -204,7 +285,7 @@ class UniversalExtractor:
             if record and ("title" in record or "url" in record):
                 results.append(record)
 
-        # If no repeating catalog cards found, fallback to single entity metadata
+        # 3. If no repeating catalog cards found, fallback to single entity metadata
         if not results:
             results = self.extract_single_entity(soup)
 
