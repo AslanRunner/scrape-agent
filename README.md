@@ -146,8 +146,4 @@ Running ScrapeAgent on a catalog produces clean structured data:
 - [ ] Proxy rotation & polite rate-limiting pool
 - [ ] Multi-page automated pagination crawling
 
----
 
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
