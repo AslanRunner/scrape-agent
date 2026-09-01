@@ -1,16 +1,18 @@
 """
-ScrapeAgent - Native Windows Desktop Application.
-A zero-terminal, instant-launch graphical user interface for universal web scraping,
-data extraction, interactive table exploration, and CSV/JSON exporting.
+ScrapeAgent - Modern Neumorphic Desktop Application.
+Crafted with CustomTkinter featuring soft tactile cards, extruded controls,
+sunken input fields, dynamic column tables, and zero-terminal execution.
 """
 import os
 import sys
 import threading
 import time
+from datetime import datetime
 from urllib.parse import urlparse
 
 import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
+from tkinter import ttk, filedialog, messagebox
+import customtkinter as ctk
 
 # Add project root to sys.path
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
@@ -24,357 +26,439 @@ from core.extractor import UniversalExtractor
 from core.exporter import export_data
 
 # -----------------------------------------------------------------------------
-# THEME: EXECUTIVE OBSIDIAN & ELECTRIC CYAN
+# NEUMORPHIC DARK THEME PALETTE
 # -----------------------------------------------------------------------------
-THEME = {
-    "bg": "#090d16",
-    "surface": "#111827",
-    "card": "#182234",
-    "subtle": "#1f293d",
-    "border": "#28354d",
-    "text": "#f8fafc",
-    "muted": "#94a3b8",
-    "accent": "#38bdf8",
-    "accent_hover": "#0ea5e9",
-    "accent_text": "#041424",
-    "success": "#10b981",
-    "warning": "#f59e0b",
-    "error": "#ef4444",
-    "input_bg": "#0f172a",
+NEU = {
+    "bg": "#12151b",            # Deep graphite background
+    "card_bg": "#1a1e27",       # Raised surface base
+    "card_border": "#282f3d",   # Light top/left extrusion border
+    "card_shadow": "#0b0d11",   # Deep bottom shadow
+    "inset_bg": "#0f1217",      # Sunken input background
+    "inset_border": "#222733",  # Inner recess stroke
+    "btn_raised": "#222733",    # Tactile raised button
+    "btn_hover": "#2d3444",     # Button hover state
+    "btn_border": "#323a4b",    # Button highlight rim
+    "accent": "#38bdf8",        # Luminous electric cyan
+    "accent_hover": "#0ea5e9",  # Deep cyan hover
+    "accent_text": "#041424",   # Contrast text on accent
+    "accent_card": "#0284c7",   # Primary CTA button
+    "text": "#f1f5f9",          # Primary crisp white
+    "muted": "#94a3b8",         # Secondary cool gray
+    "dim": "#64748b",           # Subdued tertiary
+    "success": "#10b981",       # Emerald green dot
+    "warning": "#f59e0b",       # Amber warning
+    "error": "#ef4444",         # Rose red
 }
 
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
 
-class ScrapeAgentApp:
-    """Zero-terminal native desktop application."""
 
-    def __init__(self, root: tk.Tk):
-        self.root = root
-        self.root.title("ScrapeAgent · Autonomous Data Extraction")
-        self.root.geometry("1120x760")
-        self.root.minsize(860, 580)
-        self.current_records = []
-        self.is_scraping = False
+class ScrapeAgentApp(ctk.CTk):
+    """Neumorphic Desktop Application for ScrapeAgent."""
 
+    def __init__(self):
+        super().__init__()
+
+        self.title("ScrapeAgent · Autonomous Data Extraction")
+        self.geometry("1160x800")
+        self.minsize(920, 620)
+        self.configure(fg_color=NEU["bg"])
+
+        # Window Icon
         ico_file = os.path.join(PROJECT_ROOT, "assets", "scrape_agent.ico")
         if os.path.exists(ico_file):
             try:
-                self.root.iconbitmap(ico_file)
+                self.iconbitmap(ico_file)
             except Exception:
                 pass
 
-        self._init_styles()
+        self.current_records = []
+        self.active_cols = []
+        self.is_scraping = False
+
+        self._init_ttk_styles()
         self._init_ui()
 
-    def _init_styles(self):
-        """Configure clean ttk styling."""
+    def _init_ttk_styles(self):
+        """Configure native table to blend into Neumorphic card surface."""
         style = ttk.Style()
         style.theme_use("clam")
 
-        # Table Styling
         style.configure(
             "Treeview",
-            background=THEME["surface"],
-            foreground=THEME["text"],
-            fieldbackground=THEME["surface"],
-            rowheight=30,
+            background=NEU["card_bg"],
+            foreground=NEU["text"],
+            fieldbackground=NEU["card_bg"],
+            rowheight=32,
             font=("Segoe UI", 10),
             borderwidth=0,
         )
         style.configure(
             "Treeview.Heading",
-            background=THEME["card"],
-            foreground=THEME["text"],
+            background=NEU["btn_raised"],
+            foreground=NEU["text"],
             font=("Segoe UI", 9, "bold"),
             relief="flat",
             padding=8,
+            borderwidth=0,
         )
         style.map(
             "Treeview",
-            background=[("selected", THEME["border"])],
-            foreground=[("selected", THEME["accent"])],
+            background=[("selected", NEU["card_border"])],
+            foreground=[("selected", NEU["accent"])],
         )
 
-        # Scrollbars
-        style.configure("Vertical.TScrollbar", background=THEME["card"], troughcolor=THEME["surface"], borderwidth=0)
-        style.configure("Horizontal.TScrollbar", background=THEME["card"], troughcolor=THEME["surface"], borderwidth=0)
-
-        # Progressbar
-        style.configure("Horizontal.TProgressbar", background=THEME["accent"], troughcolor=THEME["surface"], borderwidth=0)
+        style.configure("Vertical.TScrollbar", background=NEU["btn_raised"], troughcolor=NEU["card_bg"], borderwidth=0)
+        style.configure("Horizontal.TScrollbar", background=NEU["btn_raised"], troughcolor=NEU["card_bg"], borderwidth=0)
 
     def _init_ui(self):
-        t = THEME
-
-        # 1. TOP MASTHEAD
-        self.header = tk.Frame(self.root, bg=t["surface"], padx=20, pady=12, highlightthickness=1, highlightbackground=t["border"])
-        self.header.pack(fill="x", side="top")
-
-        title_box = tk.Frame(self.header, bg=t["surface"])
-        title_box.pack(side="left")
-
-        tk.Label(title_box, text="ScrapeAgent", font=("Segoe UI", 18, "bold"), fg=t["accent"], bg=t["surface"]).pack(anchor="w")
-        tk.Label(
-            title_box,
-            text="Autonomous Web Scraping & Structured Data Extraction",
-            font=("Segoe UI", 9),
-            fg=t["muted"],
-            bg=t["surface"],
-        ).pack(anchor="w")
-
-        # Header Right
-        hdr_right = tk.Frame(self.header, bg=t["surface"])
-        hdr_right.pack(side="right")
-
-        self.status_badge = tk.Label(
-            hdr_right,
-            text="● READY",
-            font=("Segoe UI", 9, "bold"),
-            fg=t["success"],
-            bg=t["subtle"],
-            padx=12,
-            pady=4,
+        # 1. TOP HEADER / MASTHEAD (Raised Neumorphic Card)
+        self.header_card = ctk.CTkFrame(
+            self,
+            fg_color=NEU["card_bg"],
+            border_color=NEU["card_border"],
+            border_width=1,
+            corner_radius=16,
+            height=70,
         )
-        self.status_badge.pack(side="left", padx=(0, 10))
+        self.header_card.pack(fill="x", padx=20, pady=(16, 12))
+        self.header_card.pack_propagate(False)
 
-        self.btn_folder = tk.Button(
+        # Brand Title Left
+        title_box = ctk.CTkFrame(self.header_card, fg_color="transparent")
+        title_box.pack(side="left", padx=20, pady=12)
+
+        self.lbl_title = ctk.CTkLabel(
+            title_box,
+            text="⚡ ScrapeAgent",
+            font=ctk.CTkFont(family="Segoe UI", size=20, weight="bold"),
+            text_color=NEU["accent"],
+        )
+        self.lbl_title.pack(anchor="w")
+
+        self.lbl_sub = ctk.CTkLabel(
+            title_box,
+            text="Autonomous Web Scraping & Structured Extraction Desktop",
+            font=ctk.CTkFont(family="Segoe UI", size=11),
+            text_color=NEU["muted"],
+        )
+        self.lbl_sub.pack(anchor="w")
+
+        # Header Right Controls
+        hdr_right = ctk.CTkFrame(self.header_card, fg_color="transparent")
+        hdr_right.pack(side="right", padx=20, pady=14)
+
+        # Status Capsule (Recessed/Sunken Pill)
+        self.status_pill = ctk.CTkFrame(
+            hdr_right,
+            fg_color=NEU["inset_bg"],
+            border_color=NEU["inset_border"],
+            border_width=1,
+            corner_radius=12,
+            height=34,
+        )
+        self.status_pill.pack(side="left", padx=(0, 12))
+
+        self.status_dot = ctk.CTkLabel(
+            self.status_pill,
+            text="●",
+            font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
+            text_color=NEU["success"],
+        )
+        self.status_dot.pack(side="left", padx=(10, 4), pady=4)
+
+        self.status_text = ctk.CTkLabel(
+            self.status_pill,
+            text="READY",
+            font=ctk.CTkFont(family="Segoe UI", size=10, weight="bold"),
+            text_color=NEU["text"],
+        )
+        self.status_text.pack(side="left", padx=(0, 12), pady=4)
+
+        # Open Output Folder Button (Tactile Raised)
+        self.btn_folder = ctk.CTkButton(
             hdr_right,
             text="📁 Output Folder",
-            font=("Segoe UI", 9),
-            bg=t["card"],
-            fg=t["text"],
-            activebackground=t["border"],
-            activeforeground=t["text"],
-            relief="flat",
-            padx=12,
-            pady=4,
-            cursor="hand2",
+            font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
+            fg_color=NEU["btn_raised"],
+            hover_color=NEU["btn_hover"],
+            border_color=NEU["btn_border"],
+            border_width=1,
+            text_color=NEU["text"],
+            corner_radius=12,
+            height=34,
             command=self.open_output_folder,
         )
         self.btn_folder.pack(side="left")
 
-        # 2. CONTROL CARD (URL INPUT & ENGINE SELECTOR)
-        self.control_card = tk.Frame(self.root, bg=t["surface"], padx=18, pady=14, highlightthickness=1, highlightbackground=t["border"])
-        self.control_card.pack(fill="x", padx=20, pady=(14, 10))
-
-        # Row 1: URL input bar
-        url_row = tk.Frame(self.control_card, bg=t["surface"])
-        url_row.pack(fill="x", pady=(0, 10))
-
-        tk.Label(url_row, text="TARGET URL:", font=("Segoe UI", 9, "bold"), fg=t["accent"], bg=t["surface"]).pack(side="left", padx=(0, 10))
-
-        self.url_entry = tk.Entry(
-            url_row,
-            font=("Segoe UI", 10),
-            bg=t["input_bg"],
-            fg=t["text"],
-            insertbackground=t["accent"],
-            relief="flat",
-            highlightthickness=1,
-            highlightbackground=t["border"],
+        # 2. CONTROL CARD (Raised Neumorphic Surface for URL & Configuration)
+        self.control_card = ctk.CTkFrame(
+            self,
+            fg_color=NEU["card_bg"],
+            border_color=NEU["card_border"],
+            border_width=1,
+            corner_radius=18,
         )
-        self.url_entry.insert(0, "https://books.toscrape.com/")
-        self.url_entry.pack(side="left", fill="x", expand=True, padx=(0, 12), ipady=5)
+        self.control_card.pack(fill="x", padx=20, pady=(0, 12))
+
+        # Row 1: URL Input Box & Scrape CTA Button
+        url_row = ctk.CTkFrame(self.control_card, fg_color="transparent")
+        url_row.pack(fill="x", padx=20, pady=(16, 12))
+
+        lbl_url = ctk.CTkLabel(
+            url_row,
+            text="TARGET URL",
+            font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
+            text_color=NEU["accent"],
+        )
+        lbl_url.pack(side="left", padx=(0, 14))
+
+        # Sunken / Inset URL Input Field
+        self.url_entry = ctk.CTkEntry(
+            url_row,
+            font=ctk.CTkFont(family="Segoe UI", size=13),
+            fg_color=NEU["inset_bg"],
+            border_color=NEU["inset_border"],
+            border_width=1,
+            text_color=NEU["text"],
+            placeholder_text="Enter any URL (e.g. https://deprem.afad.gov.tr/last-earthquakes.html)...",
+            placeholder_text_color=NEU["dim"],
+            corner_radius=12,
+            height=42,
+        )
+        self.url_entry.insert(0, "https://deprem.afad.gov.tr/last-earthquakes.html")
+        self.url_entry.pack(side="left", fill="x", expand=True, padx=(0, 14))
         self.url_entry.bind("<Return>", lambda e: self.start_scraping())
 
-        self.btn_scrape = tk.Button(
+        # Glowing Tactile Action Button
+        self.btn_scrape = ctk.CTkButton(
             url_row,
             text="🚀 SCRAPE DATA",
-            font=("Segoe UI", 10, "bold"),
-            bg=t["accent"],
-            fg=t["accent_text"],
-            activebackground=t["accent_hover"],
-            activeforeground=t["accent_text"],
-            relief="flat",
-            padx=20,
-            pady=5,
-            cursor="hand2",
+            font=ctk.CTkFont(family="Segoe UI", size=13, weight="bold"),
+            fg_color=NEU["accent_card"],
+            hover_color=NEU["accent_hover"],
+            border_color=NEU["accent"],
+            border_width=1,
+            text_color="#ffffff",
+            corner_radius=12,
+            height=42,
+            width=160,
             command=self.start_scraping,
         )
         self.btn_scrape.pack(side="right")
 
-        # Row 2: Engine Selector & Presets
-        options_row = tk.Frame(self.control_card, bg=t["surface"])
-        options_row.pack(fill="x")
+        # Row 2: Engine Segmented Switch & Preset Options
+        opts_row = ctk.CTkFrame(self.control_card, fg_color="transparent")
+        opts_row.pack(fill="x", padx=20, pady=(0, 16))
 
-        self.engine_var = tk.StringVar(value="http")
-        tk.Label(options_row, text="Engine:", font=("Segoe UI", 9, "bold"), fg=t["muted"], bg=t["surface"]).pack(side="left", padx=(0, 6))
-
-        r_http = tk.Radiobutton(
-            options_row,
-            text="HTTP Client (Fast)",
-            variable=self.engine_var,
-            value="http",
-            bg=t["surface"],
-            fg=t["text"],
-            selectcolor=t["card"],
-            activebackground=t["surface"],
-            activeforeground=t["accent"],
-            font=("Segoe UI", 9),
+        lbl_engine = ctk.CTkLabel(
+            opts_row,
+            text="Engine:",
+            font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
+            text_color=NEU["muted"],
         )
-        r_http.pack(side="left", padx=(0, 12))
+        lbl_engine.pack(side="left", padx=(0, 8))
 
-        r_browser = tk.Radiobutton(
-            options_row,
-            text="Headless Browser (Playwright / Dynamic JS)",
-            variable=self.engine_var,
-            value="browser",
-            bg=t["surface"],
-            fg=t["text"],
-            selectcolor=t["card"],
-            activebackground=t["surface"],
-            activeforeground=t["accent"],
-            font=("Segoe UI", 9),
+        # Modern Segmented Engine Button
+        self.engine_segmented = ctk.CTkSegmentedButton(
+            opts_row,
+            values=["HTTP Client (Fast)", "Headless Browser (Playwright / Dynamic JS)"],
+            font=ctk.CTkFont(family="Segoe UI", size=11),
+            fg_color=NEU["inset_bg"],
+            selected_color=NEU["accent_card"],
+            selected_hover_color=NEU["accent_hover"],
+            unselected_color=NEU["inset_bg"],
+            unselected_hover_color=NEU["btn_hover"],
+            corner_radius=10,
+            height=32,
         )
-        r_browser.pack(side="left", padx=(0, 20))
+        self.engine_segmented.set("HTTP Client (Fast)")
+        self.engine_segmented.pack(side="left", padx=(0, 24))
 
-        # Quick Presets
-        tk.Label(options_row, text="Presets:", font=("Segoe UI", 9, "bold"), fg=t["muted"], bg=t["surface"]).pack(side="left", padx=(0, 6))
-        self.preset_var = tk.StringVar(value="Select Preset...")
-        presets = ["AFAD Son Depremler", "Books to Scrape", "Quotes to Scrape", "Hacker News"]
-        preset_dropdown = ttk.Combobox(options_row, values=presets, textvariable=self.preset_var, state="readonly", width=18)
-        preset_dropdown.pack(side="left")
-        preset_dropdown.bind("<<ComboboxSelected>>", self.on_preset_change)
-
-        # 3. FULL-HEIGHT DATA TABLE WORKSPACE
-        self.table_container = tk.Frame(self.root, bg=t["surface"], padx=18, pady=12, highlightthickness=1, highlightbackground=t["border"])
-        self.table_container.pack(fill="both", expand=True, padx=20, pady=(0, 10))
-
-        # Table Header Bar (Title & Search/Filter)
-        tbl_header = tk.Frame(self.table_container, bg=t["surface"])
-        tbl_header.pack(fill="x", pady=(0, 10))
-
-        self.table_title = tk.Label(
-            tbl_header,
-            text="EXTRACTED DATASETS (0)",
-            font=("Segoe UI", 10, "bold"),
-            fg=t["accent"],
-            bg=t["surface"],
+        # Quick Presets Dropdown
+        lbl_presets = ctk.CTkLabel(
+            opts_row,
+            text="Quick Presets:",
+            font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
+            text_color=NEU["muted"],
         )
-        self.table_title.pack(side="left")
+        lbl_presets.pack(side="left", padx=(0, 8))
 
-        # Instant search filter box
-        search_box = tk.Frame(tbl_header, bg=t["surface"])
+        self.preset_menu = ctk.CTkOptionMenu(
+            opts_row,
+            values=[
+                "AFAD Son Depremler",
+                "Books to Scrape",
+                "Quotes to Scrape",
+                "Hacker News",
+            ],
+            font=ctk.CTkFont(family="Segoe UI", size=11),
+            fg_color=NEU["btn_raised"],
+            button_color=NEU["btn_hover"],
+            button_hover_color=NEU["card_border"],
+            dropdown_fg_color=NEU["card_bg"],
+            dropdown_hover_color=NEU["btn_hover"],
+            dropdown_text_color=NEU["text"],
+            text_color=NEU["text"],
+            corner_radius=10,
+            height=32,
+            width=180,
+            command=self.on_preset_change,
+        )
+        self.preset_menu.set("AFAD Son Depremler")
+        self.preset_menu.pack(side="left")
+
+        # 3. MAIN DATA WORKSPACE (Large Raised Neumorphic Card)
+        self.workspace_card = ctk.CTkFrame(
+            self,
+            fg_color=NEU["card_bg"],
+            border_color=NEU["card_border"],
+            border_width=1,
+            corner_radius=18,
+        )
+        self.workspace_card.pack(fill="both", expand=True, padx=20, pady=(0, 12))
+
+        # Workspace Header (Title & Instant Search Box)
+        ws_hdr = ctk.CTkFrame(self.workspace_card, fg_color="transparent")
+        ws_hdr.pack(fill="x", padx=20, pady=(16, 12))
+
+        self.lbl_table_title = ctk.CTkLabel(
+            ws_hdr,
+            text="EXTRACTED DATASETS (0 RECORDS)",
+            font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
+            text_color=NEU["accent"],
+        )
+        self.lbl_table_title.pack(side="left")
+
+        # Inset Filter Entry
+        search_box = ctk.CTkFrame(ws_hdr, fg_color="transparent")
         search_box.pack(side="right")
 
-        tk.Label(search_box, text="Filter Table:", font=("Segoe UI", 9), fg=t["muted"], bg=t["surface"]).pack(side="left", padx=(0, 6))
-        self.filter_entry = tk.Entry(
+        self.filter_entry = ctk.CTkEntry(
             search_box,
-            font=("Segoe UI", 9),
-            bg=t["input_bg"],
-            fg=t["text"],
-            insertbackground=t["accent"],
-            relief="flat",
-            highlightthickness=1,
-            highlightbackground=t["border"],
-            width=22,
+            placeholder_text="🔍 Filter records...",
+            placeholder_text_color=NEU["dim"],
+            font=ctk.CTkFont(family="Segoe UI", size=11),
+            fg_color=NEU["inset_bg"],
+            border_color=NEU["inset_border"],
+            border_width=1,
+            text_color=NEU["text"],
+            corner_radius=10,
+            height=32,
+            width=220,
         )
         self.filter_entry.pack(side="left")
         self.filter_entry.bind("<KeyRelease>", lambda e: self.filter_table())
 
-        # Treeview with full scrollbars
-        tree_frame = tk.Frame(self.table_container, bg=t["surface"])
-        tree_frame.pack(fill="both", expand=True)
+        # Table Container
+        table_container = ctk.CTkFrame(self.workspace_card, fg_color=NEU["card_bg"], corner_radius=12)
+        table_container.pack(fill="both", expand=True, padx=20, pady=(0, 16))
 
-        self.y_scroll = ttk.Scrollbar(tree_frame, orient="vertical", style="Vertical.TScrollbar")
+        self.y_scroll = ttk.Scrollbar(table_container, orient="vertical", style="Vertical.TScrollbar")
         self.y_scroll.pack(side="right", fill="y")
 
-        self.x_scroll = ttk.Scrollbar(tree_frame, orient="horizontal", style="Horizontal.TScrollbar")
+        self.x_scroll = ttk.Scrollbar(table_container, orient="horizontal", style="Horizontal.TScrollbar")
         self.x_scroll.pack(side="bottom", fill="x")
 
         self.tree = ttk.Treeview(
-            tree_frame,
+            table_container,
             yscrollcommand=self.y_scroll.set,
             xscrollcommand=self.x_scroll.set,
-            columns=("idx", "title", "price", "rating", "availability", "url"),
             show="headings",
         )
         self.y_scroll.config(command=self.tree.yview)
         self.x_scroll.config(command=self.tree.xview)
-
-        self.tree.heading("idx", text="#")
-        self.tree.heading("title", text="Title / Item Name")
-        self.tree.heading("price", text="Price")
-        self.tree.heading("rating", text="Rating")
-        self.tree.heading("availability", text="Availability")
-        self.tree.heading("url", text="Detail URL")
-
-        self.tree.column("idx", width=50, anchor="center")
-        self.tree.column("title", width=420, anchor="w")
-        self.tree.column("price", width=95, anchor="center")
-        self.tree.column("rating", width=90, anchor="center")
-        self.tree.column("availability", width=120, anchor="center")
-        self.tree.column("url", width=340, anchor="w")
-
         self.tree.pack(fill="both", expand=True)
 
-        # 4. BOTTOM ACTION & STATUS BAR
-        self.footer = tk.Frame(self.root, bg=t["surface"], padx=20, pady=8, highlightthickness=1, highlightbackground=t["border"])
-        self.footer.pack(fill="x", side="bottom")
+        # 4. FOOTER STATUS BAR (Raised Neumorphic Capsule)
+        self.footer_card = ctk.CTkFrame(
+            self,
+            fg_color=NEU["card_bg"],
+            border_color=NEU["card_border"],
+            border_width=1,
+            corner_radius=14,
+            height=48,
+        )
+        self.footer_card.pack(fill="x", padx=20, pady=(0, 16))
+        self.footer_card.pack_propagate(False)
 
-        # Left status text
-        self.status_label = tk.Label(self.footer, text="Ready. Paste a URL and click 'Scrape Data'.", font=("Segoe UI", 9), fg=t["muted"], bg=t["surface"])
-        self.status_label.pack(side="left")
+        self.status_msg = ctk.CTkLabel(
+            self.footer_card,
+            text="Ready. Paste any web URL and click 'Scrape Data'.",
+            font=ctk.CTkFont(family="Segoe UI", size=11),
+            text_color=NEU["muted"],
+        )
+        self.status_msg.pack(side="left", padx=20, pady=10)
 
-        # Center Progress Bar (hidden by default)
-        self.progress_bar = ttk.Progressbar(self.footer, orient="horizontal", mode="indeterminate", length=180, style="Horizontal.TProgressbar")
+        # Animated Progress Bar (hidden when idle)
+        self.progress_bar = ctk.CTkProgressBar(
+            self.footer_card,
+            mode="indeterminate",
+            width=160,
+            height=8,
+            corner_radius=4,
+            fg_color=NEU["inset_bg"],
+            progress_color=NEU["accent"],
+        )
 
-        # Right Action Buttons
-        actions_frame = tk.Frame(self.footer, bg=t["surface"])
-        actions_frame.pack(side="right")
+        # Action Buttons Right
+        actions_box = ctk.CTkFrame(self.footer_card, fg_color="transparent")
+        actions_box.pack(side="right", padx=16, pady=8)
 
-        self.btn_csv = tk.Button(
-            actions_frame,
+        self.btn_csv = ctk.CTkButton(
+            actions_box,
             text="💾 Save CSV",
-            font=("Segoe UI", 9, "bold"),
-            bg=t["card"],
-            fg=t["text"],
-            activebackground=t["border"],
-            activeforeground=t["text"],
-            relief="flat",
-            padx=12,
-            pady=3,
-            cursor="hand2",
+            font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
+            fg_color=NEU["btn_raised"],
+            hover_color=NEU["btn_hover"],
+            border_color=NEU["btn_border"],
+            border_width=1,
+            text_color=NEU["text"],
+            corner_radius=10,
+            height=30,
+            width=100,
             command=self.save_csv,
         )
         self.btn_csv.pack(side="left", padx=(0, 8))
 
-        self.btn_json = tk.Button(
-            actions_frame,
+        self.btn_json = ctk.CTkButton(
+            actions_box,
             text="💾 Save JSON",
-            font=("Segoe UI", 9),
-            bg=t["card"],
-            fg=t["text"],
-            activebackground=t["border"],
-            activeforeground=t["text"],
-            relief="flat",
-            padx=12,
-            pady=3,
-            cursor="hand2",
+            font=ctk.CTkFont(family="Segoe UI", size=11),
+            fg_color=NEU["btn_raised"],
+            hover_color=NEU["btn_hover"],
+            border_color=NEU["btn_border"],
+            border_width=1,
+            text_color=NEU["text"],
+            corner_radius=10,
+            height=30,
+            width=100,
             command=self.save_json,
         )
         self.btn_json.pack(side="left", padx=(0, 8))
 
-        self.btn_clear = tk.Button(
-            actions_frame,
+        self.btn_clear = ctk.CTkButton(
+            actions_box,
             text="✕ Clear",
-            font=("Segoe UI", 9),
-            bg=t["card"],
-            fg=t["muted"],
-            activebackground=t["border"],
-            activeforeground=t["text"],
-            relief="flat",
-            padx=10,
-            pady=3,
-            cursor="hand2",
+            font=ctk.CTkFont(family="Segoe UI", size=11),
+            fg_color=NEU["btn_raised"],
+            hover_color=NEU["btn_hover"],
+            border_color=NEU["btn_border"],
+            border_width=1,
+            text_color=NEU["dim"],
+            corner_radius=10,
+            height=30,
+            width=70,
             command=self.clear_table,
         )
         self.btn_clear.pack(side="left")
 
     # -------------------------------------------------------------------------
-    # APP ACTIONS & WORKERS
+    # APP WORKFLOW & WORKERS
     # -------------------------------------------------------------------------
-    def on_preset_change(self, event=None):
+    def on_preset_change(self, choice: str):
         """Populate URL based on selected preset."""
-        choice = self.preset_var.get()
         presets = {
             "AFAD Son Depremler": "https://deprem.afad.gov.tr/last-earthquakes.html",
             "Books to Scrape": "https://books.toscrape.com/",
@@ -382,7 +466,7 @@ class ScrapeAgentApp:
             "Hacker News": "https://news.ycombinator.com/",
         }
         if choice in presets:
-            self.url_entry.delete(0, tk.END)
+            self.url_entry.delete(0, "end")
             self.url_entry.insert(0, presets[choice])
 
     def open_output_folder(self):
@@ -394,7 +478,7 @@ class ScrapeAgentApp:
             messagebox.showinfo("Folder Location", path)
 
     def start_scraping(self):
-        """Validate input and launch background extraction thread."""
+        """Validate URL and initiate background extraction."""
         if self.is_scraping:
             return
 
@@ -408,15 +492,16 @@ class ScrapeAgentApp:
             return
 
         url = normalize_url(raw_url)
-        use_browser = self.engine_var.get() == "browser"
+        use_browser = "Headless Browser" in self.engine_segmented.get()
 
         self.is_scraping = True
-        self.btn_scrape.config(state="disabled", text="⏳ EXTRACTING...")
-        self.status_badge.config(text="● EXTRACTING", fg=THEME["warning"])
-        self.status_label.config(text=f"Connecting to {url}...")
+        self.btn_scrape.configure(state="disabled", text="⏳ EXTRACTING...")
+        self.status_dot.configure(text_color=NEU["warning"])
+        self.status_text.configure(text="EXTRACTING")
+        self.status_msg.configure(text=f"Connecting to {url}...")
 
-        self.progress_bar.pack(side="left", padx=20)
-        self.progress_bar.start(10)
+        self.progress_bar.pack(side="left", padx=16)
+        self.progress_bar.start()
 
         threading.Thread(target=self._scrape_thread, args=(url, use_browser), daemon=True).start()
 
@@ -426,21 +511,21 @@ class ScrapeAgentApp:
         try:
             if use_browser:
                 from core.browser_fetcher import fetch_page_browser
-                self.root.after(0, lambda: self.status_label.config(text="Rendering page in Chromium browser..."))
+                self.after(0, lambda: self.status_msg.configure(text="Rendering dynamic page in Chromium engine..."))
                 raw_html = fetch_page_browser(url)
             else:
-                self.root.after(0, lambda: self.status_label.config(text="Fetching HTML response..."))
+                self.after(0, lambda: self.status_msg.configure(text="Fetching HTML response..."))
                 resp = fetch_page(url)
                 raw_html = resp.text
 
-            self.root.after(0, lambda: self.status_label.config(text="Analyzing DOM patterns & data tables..."))
+            self.after(0, lambda: self.status_msg.configure(text="Analyzing DOM patterns and data tables..."))
             soup = clean_html(raw_html)
 
-            # Check bot blocks
+            # Check bot protection walls
             block_reason = check_bot_protection(soup)
             if block_reason:
-                msg = f"Anti-Bot Challenge Detected ({block_reason}). The site served a verification screen."
-                self.root.after(0, lambda: messagebox.showwarning("Anti-Bot Detected", msg))
+                msg = f"Anti-Bot Challenge Detected ({block_reason}). The target site served an access denial page."
+                self.after(0, lambda: messagebox.showwarning("Anti-Bot Detected", msg))
 
             extractor = UniversalExtractor(base_url=url)
             records = extractor.extract_all(soup)
@@ -448,61 +533,61 @@ class ScrapeAgentApp:
             elapsed = time.time() - start_time
 
             if not records:
-                self.root.after(0, lambda: self._on_scrape_empty(url))
+                self.after(0, lambda: self._on_scrape_empty(url))
             else:
                 default_file = derive_default_filename(url, ext="csv")
                 export_data(records, default_file)
-                self.root.after(0, lambda: self._on_scrape_success(records, default_file, elapsed))
+                self.after(0, lambda: self._on_scrape_success(records, default_file, elapsed))
 
         except Exception as err:
-            self.root.after(0, lambda: self._on_scrape_error(err))
+            self.after(0, lambda: self._on_scrape_error(err))
         finally:
             self.is_scraping = False
-            self.root.after(0, self._reset_ui)
+            self.after(0, self._reset_ui)
 
     def _on_scrape_success(self, records: list[dict], filename: str, elapsed: float):
-        """Update table and status upon successful scrape."""
+        """Render records on UI thread."""
         self.current_records = records
         self.render_table(self.current_records)
-        self.status_label.config(text=f"✓ Extracted {len(records)} records in {elapsed:.2f}s. Saved to '{filename}'.")
+        self.status_msg.configure(text=f"✓ Successfully extracted {len(records)} records in {elapsed:.2f}s. Saved to '{filename}'.")
 
     def _on_scrape_empty(self, url: str):
-        """Handle no records detected."""
-        self.status_label.config(text="No structured data clusters or tables found on page.")
-        messagebox.showinfo("No Records", "No recurring item cards or tables were detected on this page.")
+        """Handle no records."""
+        self.status_msg.configure(text="No structured data records or tables found on page.")
+        messagebox.showinfo("No Records", "No recurring item cards or data tables were detected on this page.")
 
     def _on_scrape_error(self, error: Exception):
-        """Handle scrape failure."""
-        self.status_label.config(text=f"Error: {error}")
+        """Handle scrape error."""
+        self.status_msg.configure(text=f"Extraction error: {error}")
         messagebox.showerror("Scraping Error", f"Extraction failed:\n{error}")
 
     def _reset_ui(self):
-        """Restore buttons and progress indicators."""
+        """Restore buttons and indicators."""
         self.progress_bar.stop()
         self.progress_bar.pack_forget()
-        self.btn_scrape.config(state="normal", text="🚀 SCRAPE DATA")
-        self.status_badge.config(text="● READY", fg=THEME["success"])
+        self.btn_scrape.configure(state="normal", text="🚀 SCRAPE DATA")
+        self.status_dot.configure(text_color=NEU["success"])
+        self.status_text.configure(text="READY")
 
     def render_table(self, records: list[dict]):
-        """Populate treeview table dynamically adapting to any dataset columns."""
+        """Populate treeview dynamically adapting to any dataset columns."""
         for item in self.tree.get_children():
             self.tree.delete(item)
 
         if not records:
-            self.table_title.config(text="EXTRACTED DATASETS (0)")
+            self.lbl_table_title.configure(text="EXTRACTED DATASETS (0 RECORDS)")
             return
 
-        # Determine all unique columns across records
         all_keys = list(dict.fromkeys(k for row in records for k in row.keys()))
 
-        # Remove redundant helper 'title' if 'Yer' or other specific column is present
+        # Remove redundant helper 'title' if a domain-specific column like 'Yer' or 'name' is present
         if "title" in all_keys and any(k in all_keys for k in ["Yer", "name", "headline", "item_name"]):
             all_keys.remove("title")
 
         cols = ["#"] + all_keys
         self.active_cols = cols
 
-        # Configure dynamic headings and column widths
+        # Configure dynamic column headers and proportions
         self.tree.config(columns=cols)
         for col in cols:
             self.tree.heading(col, text=col)
@@ -521,34 +606,33 @@ class ScrapeAgentApp:
                 self.tree.column(col, width=120, minwidth=80, anchor="center")
 
         self._insert_rows(records)
-        self.table_title.config(text=f"EXTRACTED DATASETS ({len(records)})")
+        self.lbl_table_title.configure(text=f"EXTRACTED DATASETS ({len(records)} RECORDS)")
 
     def _insert_rows(self, records: list[dict]):
-        """Insert records into treeview according to active_cols."""
+        """Insert records into treeview."""
         for item in self.tree.get_children():
             self.tree.delete(item)
 
-        cols = getattr(self, "active_cols", None)
-        if not cols:
+        if not self.active_cols:
             return
 
         for i, row in enumerate(records, 1):
             values = [i]
-            for col in cols[1:]:
+            for col in self.active_cols[1:]:
                 val = row.get(col, "")
                 if col == "rating" and str(val).isdigit():
                     val = "*" * int(val)
                 elif col == "price" and "currency" in row:
                     val = f"{row.get('currency', '')}{val}"
                 values.append(val)
-            self.tree.insert("", tk.END, values=values)
+            self.tree.insert("", "end", values=values)
 
     def filter_table(self):
-        """Filter table rows by live keyword without rebuilding headings."""
+        """Filter table rows dynamically."""
         query = self.filter_entry.get().strip().lower()
         if not query:
             self._insert_rows(self.current_records)
-            self.table_title.config(text=f"EXTRACTED DATASETS ({len(self.current_records)})")
+            self.lbl_table_title.configure(text=f"EXTRACTED DATASETS ({len(self.current_records)} RECORDS)")
             return
 
         filtered = [
@@ -556,10 +640,10 @@ class ScrapeAgentApp:
             if any(query in str(v).lower() for v in r.values())
         ]
         self._insert_rows(filtered)
-        self.table_title.config(text=f"EXTRACTED DATASETS ({len(filtered)} of {len(self.current_records)})")
+        self.lbl_table_title.configure(text=f"EXTRACTED DATASETS ({len(filtered)} OF {len(self.current_records)} RECORDS)")
 
     def save_csv(self):
-        """Export current table to CSV via save dialog."""
+        """Save extracted records as CSV."""
         if not self.current_records:
             messagebox.showwarning("Empty", "No records available to export.")
             return
@@ -574,7 +658,7 @@ class ScrapeAgentApp:
             messagebox.showinfo("Export Complete", f"Successfully exported {len(self.current_records)} records to:\n{path}")
 
     def save_json(self):
-        """Export current table to JSON via save dialog."""
+        """Save extracted records as JSON."""
         if not self.current_records:
             messagebox.showwarning("Empty", "No records available to export.")
             return
@@ -589,18 +673,17 @@ class ScrapeAgentApp:
             messagebox.showinfo("Export Complete", f"Successfully exported {len(self.current_records)} records to:\n{path}")
 
     def clear_table(self):
-        """Reset records and table."""
+        """Clear memory and reset table."""
         self.current_records = []
         for item in self.tree.get_children():
             self.tree.delete(item)
-        self.table_title.config(text="EXTRACTED DATASETS (0)")
-        self.status_label.config(text="Table cleared.")
+        self.lbl_table_title.configure(text="EXTRACTED DATASETS (0 RECORDS)")
+        self.status_msg.configure(text="Table cleared.")
 
 
 def main():
-    root = tk.Tk()
-    app = ScrapeAgentApp(root)
-    root.mainloop()
+    app = ScrapeAgentApp()
+    app.mainloop()
 
 
 if __name__ == "__main__":
