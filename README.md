@@ -44,7 +44,9 @@ flowchart TD
 
 ```text
 scrape-agent/
-|-- agent.py               # Unified CLI interface (Interactive & flag-driven modes)
+|-- run.bat                # Windows desktop double-click launcher
+|-- ScrapeAgent.bat        # Windows desktop application shortcut
+|-- agent.py               # Desktop application core interface
 |-- config.py              # Central configuration (User-Agents, timeouts, export formats)
 |-- scrape_books.py        # Single-page catalog scraper (Phase 1)
 |-- scrape_all_books.py    # Multi-page pagination & detail enrichment scraper (Phase 2)
@@ -55,6 +57,7 @@ scrape-agent/
 |-- core/                  # Core extraction framework
 |   |-- __init__.py
 |   |-- fetcher.py         # Resilient HTTP transport layer
+|   |-- browser_fetcher.py # Headless browser transport (Playwright)
 |   |-- cleaner.py         # Markup sanitization and JSON-LD retention
 |   |-- extractor.py       # Heuristic pattern discovery and entity parser
 |   |-- exporter.py        # Multi-format data serialization
@@ -79,49 +82,40 @@ Clone the repository and install the dependencies:
 ```bash
 git clone https://github.com/AslanRunner/scrape-agent.git
 cd scrape-agent
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 ---
 
 ## Usage Guide
 
-### 1. Modern Web Application (ScrapeAgent Studio)
+### 1. Local Desktop Application (Windows Launcher)
 
-Launch the full interactive web application to input target URLs directly, select extraction engines, inspect live datasets, and export files:
+Run the desktop application simply by double-clicking **`run.bat`** (or **`ScrapeAgent.bat`**) in Windows Explorer, or execute:
 
 ```bash
-streamlit run app.py
+run.bat
 ```
+*(or `python agent.py`)*
 
-**Application Capabilities:**
-- **Universal URL Scraping**: Enter any URL directly, toggle between HTTP Engine and Headless Browser (Playwright), and preview extracted items in real time.
-- **Dataset Explorer & Analytics**: Search keywords across titles and descriptions, filter by category/price/rating sliders, and calculate summary statistics.
-- **One-Click Export**: Download any extracted or filtered view directly as CSV or JSON.
-- **Catalog Scraping Pipeline**: Launch multi-page crawlers with interactive progress tracking.
+The interactive desktop menu provides immediate access to:
+- **Scrape any Custom URL**: Input any link directly, select between the fast HTTP engine or Headless Chromium, and auto-export to CSV/JSON with intelligent default file naming.
+- **Full Catalog Crawling**: Launch multi-page pagination and detail enrichment scrapers with configurable page depth.
+- **Search & Analyze Datasets**: Query, filter, and inspect datasets via the integrated in-terminal pandas REPL.
+- **Open Output Folder**: Open the local output directory in Windows File Explorer with a single keystroke to inspect generated CSV files.
 
 ---
 
-### 2. Unified Agent CLI
+### 2. Command-Line Direct Scraping
 
-#### Interactive Mode
-
-Launch the interactive prompt to enter target URLs or select built-in routines:
+Scrape any arbitrary URL directly from the terminal without entering the interactive menu:
 
 ```bash
-python agent.py
-```
-
-#### Direct URL Extraction
-
-Scrape any arbitrary URL directly from the terminal:
-
-```bash
-# Export extracted items to CSV
-python agent.py --url "https://books.toscrape.com/" --output "scraped_data.csv"
+# Export extracted items to CSV (auto-names if output omitted)
+python agent.py --url "https://books.toscrape.com/" --output "books.csv"
 
 # Export extracted items to JSON
-python agent.py --url "https://books.toscrape.com/" --output "scraped_data.json"
+python agent.py --url "https://books.toscrape.com/" --output "books.json"
 
 # Scrape dynamic JavaScript / SPA pages using headless browser
 python agent.py --url "https://example.com" --browser --output "rendered_data.csv"
