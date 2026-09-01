@@ -28,30 +28,65 @@ from core.exporter import export_data
 from config import DEFAULT_OUTPUT_DIR
 
 # -----------------------------------------------------------------------------
-# NEUMORPHIC DARK PALETTE (OPTIMIZED HIGH CONTRAST)
+# WARM AMBER / OBSIDIAN & CREAM DUAL THEME PALETTE
 # -----------------------------------------------------------------------------
-NEU = {
-    "bg": "#101318",            # Deep obsidian graphite background
-    "card_bg": "#181d26",       # Raised surface base
-    "card_border": "#27303f",   # Subtle extrusion border
-    "card_shadow": "#080a0d",   # Deep bottom shadow
-    "inset_bg": "#0d1015",      # Sunken input background
-    "inset_border": "#222936",  # Inner recess stroke
-    "btn_raised": "#222835",    # Tactile raised button
-    "btn_hover": "#2d3546",     # Button hover state
-    "btn_border": "#364052",    # Button highlight rim
-    "accent": "#38bdf8",        # Luminous electric cyan
-    "accent_hover": "#0ea5e9",  # Deep cyan hover
-    "accent_text": "#041424",   # Contrast text on accent
-    "accent_card": "#0284c7",   # Primary CTA button
-    "text": "#ffffff",          # Pure white for crystal clear readability
-    "text_subtle": "#cbd5e1",   # Light slate for easy-to-read secondary text
-    "muted": "#94a3b8",         # Crisp neutral labels
-    "dim": "#64748b",           # Subdued hints
-    "success": "#10b981",       # Emerald green dot
-    "warning": "#f59e0b",       # Amber warning
-    "error": "#ef4444",         # Rose red
+THEMES = {
+    "dark": {
+        "bg": "#121214",            # Deep warm espresso charcoal
+        "card_bg": "#1a1a1f",       # Warm slate/espresso surface
+        "card_border": "#2c2c36",   # Subtle warm border
+        "card_shadow": "#09090b",   # Deep bottom shadow
+        "inset_bg": "#151518",      # Sunken input background
+        "inset_border": "#282832",  # Inner recess stroke
+        "btn_raised": "#24242c",    # Tactile raised button
+        "btn_hover": "#32323c",     # Button hover state
+        "btn_border": "#3c3c4a",    # Button highlight rim
+        "accent": "#f59e0b",        # Luminous warm amber / gold
+        "accent_hover": "#d97706",  # Deep amber hover
+        "accent_text": "#18181b",   # High-contrast text on accent
+        "accent_card": "#f59e0b",   # Primary CTA button
+        "text": "#fafafa",          # Crisp white for clear readability
+        "text_subtle": "#d4d4d8",   # Light slate for secondary text
+        "muted": "#a1a1aa",         # Crisp neutral labels
+        "dim": "#71717a",           # Subdued hints / placeholder
+        "success": "#10b981",       # Emerald green dot
+        "warning": "#f59e0b",       # Amber warning
+        "error": "#ef4444",         # Rose red
+        "tree_bg": "#1a1a1f",       # Table background
+        "tree_fg": "#fafafa",       # Table row text
+        "tree_head_bg": "#24242c",  # Table header background
+        "tree_head_fg": "#fafafa",  # Table header text
+        "tree_selected": "#2e2e3a", # Table row selected background
+    },
+    "light": {
+        "bg": "#f6f5f0",            # Warm ivory / light canvas
+        "card_bg": "#ffffff",       # Pure white card surface
+        "card_border": "#e3ded5",   # Soft warm card border
+        "card_shadow": "#ded9ce",   # Soft card shadow
+        "inset_bg": "#f0ede5",      # Sunken input background
+        "inset_border": "#d8d3c5",  # Inset stroke
+        "btn_raised": "#eae6dc",    # Tactile raised button
+        "btn_hover": "#dfdad0",     # Button hover state
+        "btn_border": "#cec8bc",    # Button highlight rim
+        "accent": "#d97706",        # Rich warm amber / ochre
+        "accent_hover": "#b45309",  # Deep amber hover
+        "accent_text": "#ffffff",   # Crisp white text on amber
+        "accent_card": "#d97706",   # Primary CTA button
+        "text": "#1c1917",          # Deep warm espresso text
+        "text_subtle": "#44403c",   # Secondary body text
+        "muted": "#78716c",         # Crisp neutral labels
+        "dim": "#a8a29e",           # Subdued hints / placeholder
+        "success": "#059669",       # Forest green dot
+        "warning": "#d97706",       # Amber warning
+        "error": "#dc2626",         # Rose red
+        "tree_bg": "#ffffff",       # Table background
+        "tree_fg": "#1c1917",       # Table row text
+        "tree_head_bg": "#eae6dc",  # Table header background
+        "tree_head_fg": "#1c1917",  # Table header text
+        "tree_selected": "#e3ded5", # Table row selected background
+    },
 }
+NEU = THEMES["dark"]
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -87,15 +122,18 @@ FONT_DISPLAY, FONT_BODY = resolve_font_pairing()
 
 
 class ScrapeAgentApp(ctk.CTk):
-    """Neumorphic Desktop Application for ScrapeAgent."""
+    """Neumorphic Desktop Application for ScrapeAgent with Dark & Light Warm Amber Theme."""
 
     def __init__(self):
         super().__init__()
 
+        self.current_theme_name = "dark"
+        self.theme = THEMES["dark"]
+
         self.title("ScrapeAgent · Autonomous Data Extraction")
         self.geometry("1160x800")
         self.minsize(920, 620)
-        self.configure(fg_color=NEU["bg"])
+        self.configure(fg_color=self.theme["bg"])
 
         # Window Icon
         ico_file = os.path.join(PROJECT_ROOT, "assets", "scrape_agent.ico")
@@ -113,15 +151,15 @@ class ScrapeAgentApp(ctk.CTk):
         self._init_ui()
 
     def _init_ttk_styles(self):
-        """Configure native table with high-legibility body font and seamless dark aesthetics."""
+        """Configure native table with high-legibility body font and seamless aesthetics."""
         style = ttk.Style()
         style.theme_use("clam")
 
         style.configure(
             "Treeview",
-            background=NEU["card_bg"],
-            foreground=NEU["text"],
-            fieldbackground=NEU["card_bg"],
+            background=self.theme["tree_bg"],
+            foreground=self.theme["tree_fg"],
+            fieldbackground=self.theme["tree_bg"],
             rowheight=32,
             font=(FONT_BODY, 10),
             borderwidth=0,
@@ -129,8 +167,8 @@ class ScrapeAgentApp(ctk.CTk):
         )
         style.configure(
             "Treeview.Heading",
-            background=NEU["btn_raised"],
-            foreground=NEU["text"],
+            background=self.theme["tree_head_bg"],
+            foreground=self.theme["tree_head_fg"],
             font=(FONT_BODY, 9, "bold"),
             relief="flat",
             padding=8,
@@ -138,16 +176,18 @@ class ScrapeAgentApp(ctk.CTk):
         )
         style.map(
             "Treeview",
-            background=[("selected", NEU["card_border"])],
-            foreground=[("selected", NEU["accent"])],
+            background=[("selected", self.theme["tree_selected"])],
+            foreground=[("selected", self.theme["accent"])],
         )
 
     def _init_ui(self):
+        t = self.theme
+
         # 1. TOP HEADER / MASTHEAD (Raised Neumorphic Card)
         self.header_card = ctk.CTkFrame(
             self,
-            fg_color=NEU["card_bg"],
-            border_color=NEU["card_border"],
+            fg_color=t["card_bg"],
+            border_color=t["card_border"],
             border_width=1,
             corner_radius=16,
             height=70,
@@ -163,7 +203,7 @@ class ScrapeAgentApp(ctk.CTk):
             title_box,
             text="ScrapeAgent",
             font=ctk.CTkFont(family=FONT_DISPLAY, size=21, weight="bold"),
-            text_color=NEU["accent"],
+            text_color=t["accent"],
         )
         self.lbl_title.pack(anchor="w")
 
@@ -172,7 +212,7 @@ class ScrapeAgentApp(ctk.CTk):
             title_box,
             text="Autonomous Web Scraping & Structured Extraction Desktop",
             font=ctk.CTkFont(family=FONT_BODY, size=11),
-            text_color=NEU["text_subtle"],
+            text_color=t["text_subtle"],
         )
         self.lbl_sub.pack(anchor="w")
 
@@ -183,19 +223,19 @@ class ScrapeAgentApp(ctk.CTk):
         # Status Capsule (Recessed/Sunken Pill)
         self.status_pill = ctk.CTkFrame(
             hdr_right,
-            fg_color=NEU["inset_bg"],
-            border_color=NEU["inset_border"],
+            fg_color=t["inset_bg"],
+            border_color=t["inset_border"],
             border_width=1,
             corner_radius=12,
             height=34,
         )
-        self.status_pill.pack(side="left", padx=(0, 12))
+        self.status_pill.pack(side="left", padx=(0, 10))
 
         self.status_dot = ctk.CTkLabel(
             self.status_pill,
             text="●",
             font=ctk.CTkFont(family=FONT_BODY, size=11, weight="bold"),
-            text_color=NEU["success"],
+            text_color=t["success"],
         )
         self.status_dot.pack(side="left", padx=(10, 4), pady=4)
 
@@ -203,20 +243,37 @@ class ScrapeAgentApp(ctk.CTk):
             self.status_pill,
             text="READY",
             font=ctk.CTkFont(family=FONT_DISPLAY, size=10, weight="bold"),
-            text_color=NEU["text"],
+            text_color=t["text"],
         )
         self.status_text.pack(side="left", padx=(0, 12), pady=4)
+
+        # Theme Switcher Button (Light / Dark Mode)
+        self.btn_theme = ctk.CTkButton(
+            hdr_right,
+            text="☀ Light",
+            font=ctk.CTkFont(family=FONT_BODY, size=11, weight="bold"),
+            fg_color=t["btn_raised"],
+            hover_color=t["btn_hover"],
+            border_color=t["btn_border"],
+            border_width=1,
+            text_color=t["text"],
+            corner_radius=12,
+            height=34,
+            width=85,
+            command=self.toggle_theme,
+        )
+        self.btn_theme.pack(side="left", padx=(0, 10))
 
         # Open Output Folder Button (Tactile Raised)
         self.btn_folder = ctk.CTkButton(
             hdr_right,
             text="Output Folder",
             font=ctk.CTkFont(family=FONT_BODY, size=11, weight="bold"),
-            fg_color=NEU["btn_raised"],
-            hover_color=NEU["btn_hover"],
-            border_color=NEU["btn_border"],
+            fg_color=t["btn_raised"],
+            hover_color=t["btn_hover"],
+            border_color=t["btn_border"],
             border_width=1,
-            text_color=NEU["text"],
+            text_color=t["text"],
             corner_radius=12,
             height=34,
             command=self.open_output_folder,
@@ -226,8 +283,8 @@ class ScrapeAgentApp(ctk.CTk):
         # 2. CONTROL CARD (Raised Neumorphic Surface for URL & Configuration)
         self.control_card = ctk.CTkFrame(
             self,
-            fg_color=NEU["card_bg"],
-            border_color=NEU["card_border"],
+            fg_color=t["card_bg"],
+            border_color=t["card_border"],
             border_width=1,
             corner_radius=18,
         )
@@ -237,24 +294,24 @@ class ScrapeAgentApp(ctk.CTk):
         url_row = ctk.CTkFrame(self.control_card, fg_color="transparent")
         url_row.pack(fill="x", padx=20, pady=(16, 12))
 
-        lbl_url = ctk.CTkLabel(
+        self.lbl_url = ctk.CTkLabel(
             url_row,
             text="TARGET URL",
             font=ctk.CTkFont(family=FONT_DISPLAY, size=11, weight="bold"),
-            text_color=NEU["accent"],
+            text_color=t["accent"],
         )
-        lbl_url.pack(side="left", padx=(0, 14))
+        self.lbl_url.pack(side="left", padx=(0, 14))
 
         # Sunken / Inset URL Input Field (Body Font for Clean Reading)
         self.url_entry = ctk.CTkEntry(
             url_row,
             font=ctk.CTkFont(family=FONT_BODY, size=12),
-            fg_color=NEU["inset_bg"],
-            border_color=NEU["inset_border"],
+            fg_color=t["inset_bg"],
+            border_color=t["inset_border"],
             border_width=1,
-            text_color=NEU["text"],
+            text_color=t["text"],
             placeholder_text="Enter any URL (e.g. https://deprem.afad.gov.tr/last-earthquakes.html)...",
-            placeholder_text_color=NEU["dim"],
+            placeholder_text_color=t["dim"],
             corner_radius=12,
             height=42,
         )
@@ -267,11 +324,11 @@ class ScrapeAgentApp(ctk.CTk):
             url_row,
             text="SCRAPE DATA",
             font=ctk.CTkFont(family=FONT_DISPLAY, size=12, weight="bold"),
-            fg_color=NEU["accent_card"],
-            hover_color=NEU["accent_hover"],
-            border_color=NEU["accent"],
+            fg_color=t["accent_card"],
+            hover_color=t["accent_hover"],
+            border_color=t["accent"],
             border_width=1,
-            text_color="#ffffff",
+            text_color=t["accent_text"],
             corner_radius=12,
             height=42,
             width=150,
@@ -283,24 +340,25 @@ class ScrapeAgentApp(ctk.CTk):
         opts_row = ctk.CTkFrame(self.control_card, fg_color="transparent")
         opts_row.pack(fill="x", padx=20, pady=(0, 16))
 
-        lbl_engine = ctk.CTkLabel(
+        self.lbl_engine = ctk.CTkLabel(
             opts_row,
             text="Engine:",
             font=ctk.CTkFont(family=FONT_BODY, size=11, weight="bold"),
-            text_color=NEU["text_subtle"],
+            text_color=t["text_subtle"],
         )
-        lbl_engine.pack(side="left", padx=(0, 8))
+        self.lbl_engine.pack(side="left", padx=(0, 8))
 
         # Modern Segmented Engine Button
         self.engine_segmented = ctk.CTkSegmentedButton(
             opts_row,
             values=["HTTP Client (Fast)", "Headless Browser (Playwright / Dynamic JS)"],
             font=ctk.CTkFont(family=FONT_BODY, size=11),
-            fg_color=NEU["inset_bg"],
-            selected_color=NEU["accent_card"],
-            selected_hover_color=NEU["accent_hover"],
-            unselected_color=NEU["inset_bg"],
-            unselected_hover_color=NEU["btn_hover"],
+            fg_color=t["inset_bg"],
+            selected_color=t["accent_card"],
+            selected_hover_color=t["accent_hover"],
+            unselected_color=t["inset_bg"],
+            unselected_hover_color=t["btn_hover"],
+            text_color=t["text"],
             corner_radius=10,
             height=32,
         )
@@ -308,13 +366,13 @@ class ScrapeAgentApp(ctk.CTk):
         self.engine_segmented.pack(side="left", padx=(0, 24))
 
         # Quick Presets Dropdown
-        lbl_presets = ctk.CTkLabel(
+        self.lbl_presets = ctk.CTkLabel(
             opts_row,
             text="Quick Presets:",
             font=ctk.CTkFont(family=FONT_BODY, size=11, weight="bold"),
-            text_color=NEU["text_subtle"],
+            text_color=t["text_subtle"],
         )
-        lbl_presets.pack(side="left", padx=(0, 8))
+        self.lbl_presets.pack(side="left", padx=(0, 8))
 
         self.preset_menu = ctk.CTkOptionMenu(
             opts_row,
@@ -325,13 +383,13 @@ class ScrapeAgentApp(ctk.CTk):
                 "Hacker News",
             ],
             font=ctk.CTkFont(family=FONT_BODY, size=11),
-            fg_color=NEU["btn_raised"],
-            button_color=NEU["btn_hover"],
-            button_hover_color=NEU["card_border"],
-            dropdown_fg_color=NEU["card_bg"],
-            dropdown_hover_color=NEU["btn_hover"],
-            dropdown_text_color=NEU["text"],
-            text_color=NEU["text"],
+            fg_color=t["btn_raised"],
+            button_color=t["btn_hover"],
+            button_hover_color=t["card_border"],
+            dropdown_fg_color=t["card_bg"],
+            dropdown_hover_color=t["btn_hover"],
+            dropdown_text_color=t["text"],
+            text_color=t["text"],
             corner_radius=10,
             height=32,
             width=180,
@@ -343,8 +401,8 @@ class ScrapeAgentApp(ctk.CTk):
         # 3. MAIN DATA WORKSPACE (Large Raised Neumorphic Card)
         self.workspace_card = ctk.CTkFrame(
             self,
-            fg_color=NEU["card_bg"],
-            border_color=NEU["card_border"],
+            fg_color=t["card_bg"],
+            border_color=t["card_border"],
             border_width=1,
             corner_radius=18,
         )
@@ -358,7 +416,7 @@ class ScrapeAgentApp(ctk.CTk):
             ws_hdr,
             text="EXTRACTED DATASETS (0 RECORDS)",
             font=ctk.CTkFont(family=FONT_DISPLAY, size=12, weight="bold"),
-            text_color=NEU["accent"],
+            text_color=t["accent"],
         )
         self.lbl_table_title.pack(side="left")
 
@@ -369,12 +427,12 @@ class ScrapeAgentApp(ctk.CTk):
         self.filter_entry = ctk.CTkEntry(
             search_box,
             placeholder_text="Filter records...",
-            placeholder_text_color=NEU["dim"],
+            placeholder_text_color=t["dim"],
             font=ctk.CTkFont(family=FONT_BODY, size=11),
-            fg_color=NEU["inset_bg"],
-            border_color=NEU["inset_border"],
+            fg_color=t["inset_bg"],
+            border_color=t["inset_border"],
             border_width=1,
-            text_color=NEU["text"],
+            text_color=t["text"],
             corner_radius=10,
             height=32,
             width=220,
@@ -382,41 +440,41 @@ class ScrapeAgentApp(ctk.CTk):
         self.filter_entry.pack(side="left")
         self.filter_entry.bind("<KeyRelease>", lambda e: self.filter_table())
 
-        # Table Container with Dark Inset Styling (Zero white lines or bars)
-        table_container = ctk.CTkFrame(
+        # Table Container with Inset Styling
+        self.table_container = ctk.CTkFrame(
             self.workspace_card,
-            fg_color=NEU["inset_bg"],
-            border_color=NEU["inset_border"],
+            fg_color=t["inset_bg"],
+            border_color=t["inset_border"],
             border_width=1,
             corner_radius=12,
         )
-        table_container.pack(fill="both", expand=True, padx=20, pady=(0, 16))
+        self.table_container.pack(fill="both", expand=True, padx=20, pady=(0, 16))
 
-        # Modern Dark Neumorphic Scrollbars (Zero white borders/troughs)
+        # Modern Neumorphic Scrollbars
         self.y_scroll = ctk.CTkScrollbar(
-            table_container,
+            self.table_container,
             orientation="vertical",
-            fg_color=NEU["inset_bg"],
-            button_color=NEU["btn_border"],
-            button_hover_color=NEU["accent"],
+            fg_color=t["inset_bg"],
+            button_color=t["btn_border"],
+            button_hover_color=t["accent"],
             corner_radius=6,
             width=12,
         )
         self.y_scroll.pack(side="right", fill="y", padx=(2, 4), pady=4)
 
         self.x_scroll = ctk.CTkScrollbar(
-            table_container,
+            self.table_container,
             orientation="horizontal",
-            fg_color=NEU["inset_bg"],
-            button_color=NEU["btn_border"],
-            button_hover_color=NEU["accent"],
+            fg_color=t["inset_bg"],
+            button_color=t["btn_border"],
+            button_hover_color=t["accent"],
             corner_radius=6,
             height=12,
         )
         self.x_scroll.pack(side="bottom", fill="x", padx=4, pady=(2, 4))
 
         self.tree = ttk.Treeview(
-            table_container,
+            self.table_container,
             yscrollcommand=self.y_scroll.set,
             xscrollcommand=self.x_scroll.set,
             show="headings",
@@ -428,8 +486,8 @@ class ScrapeAgentApp(ctk.CTk):
         # 4. FOOTER STATUS BAR (Raised Neumorphic Capsule)
         self.footer_card = ctk.CTkFrame(
             self,
-            fg_color=NEU["card_bg"],
-            border_color=NEU["card_border"],
+            fg_color=t["card_bg"],
+            border_color=t["card_border"],
             border_width=1,
             corner_radius=14,
             height=48,
@@ -441,7 +499,7 @@ class ScrapeAgentApp(ctk.CTk):
             self.footer_card,
             text="Ready. Paste any web URL and click 'SCRAPE DATA'.",
             font=ctk.CTkFont(family=FONT_BODY, size=11),
-            text_color=NEU["text_subtle"],
+            text_color=t["text_subtle"],
         )
         self.status_msg.pack(side="left", padx=20, pady=10)
 
@@ -452,8 +510,8 @@ class ScrapeAgentApp(ctk.CTk):
             width=160,
             height=8,
             corner_radius=4,
-            fg_color=NEU["inset_bg"],
-            progress_color=NEU["accent"],
+            fg_color=t["inset_bg"],
+            progress_color=t["accent"],
         )
 
         # Action Buttons Right
@@ -464,11 +522,11 @@ class ScrapeAgentApp(ctk.CTk):
             actions_box,
             text="Save CSV",
             font=ctk.CTkFont(family=FONT_BODY, size=11, weight="bold"),
-            fg_color=NEU["btn_raised"],
-            hover_color=NEU["btn_hover"],
-            border_color=NEU["btn_border"],
+            fg_color=t["btn_raised"],
+            hover_color=t["btn_hover"],
+            border_color=t["btn_border"],
             border_width=1,
-            text_color=NEU["text"],
+            text_color=t["text"],
             corner_radius=10,
             height=30,
             width=90,
@@ -480,11 +538,11 @@ class ScrapeAgentApp(ctk.CTk):
             actions_box,
             text="Save JSON",
             font=ctk.CTkFont(family=FONT_BODY, size=11),
-            fg_color=NEU["btn_raised"],
-            hover_color=NEU["btn_hover"],
-            border_color=NEU["btn_border"],
+            fg_color=t["btn_raised"],
+            hover_color=t["btn_hover"],
+            border_color=t["btn_border"],
             border_width=1,
-            text_color=NEU["text"],
+            text_color=t["text"],
             corner_radius=10,
             height=30,
             width=90,
@@ -496,17 +554,134 @@ class ScrapeAgentApp(ctk.CTk):
             actions_box,
             text="Clear",
             font=ctk.CTkFont(family=FONT_BODY, size=11),
-            fg_color=NEU["btn_raised"],
-            hover_color=NEU["btn_hover"],
-            border_color=NEU["btn_border"],
+            fg_color=t["btn_raised"],
+            hover_color=t["btn_hover"],
+            border_color=t["btn_border"],
             border_width=1,
-            text_color=NEU["muted"],
+            text_color=t["muted"],
             corner_radius=10,
             height=30,
             width=65,
             command=self.clear_table,
         )
         self.btn_clear.pack(side="left")
+
+    def toggle_theme(self):
+        """Toggle between Dark and Light mode dynamically."""
+        new_mode = "light" if self.current_theme_name == "dark" else "dark"
+        self.apply_theme(new_mode)
+
+    def apply_theme(self, mode: str):
+        """Apply the selected theme to all widgets dynamically."""
+        self.current_theme_name = mode
+        self.theme = THEMES[mode]
+        t = self.theme
+
+        ctk.set_appearance_mode(mode)
+        self.configure(fg_color=t["bg"])
+
+        # Header Card
+        self.header_card.configure(fg_color=t["card_bg"], border_color=t["card_border"])
+        self.lbl_title.configure(text_color=t["accent"])
+        self.lbl_sub.configure(text_color=t["text_subtle"])
+        self.status_pill.configure(fg_color=t["inset_bg"], border_color=t["inset_border"])
+        self.status_text.configure(text_color=t["text"])
+        self.status_dot.configure(text_color=t["warning"] if self.is_scraping else t["success"])
+        self.btn_theme.configure(
+            text="☀ Light" if mode == "dark" else "🌙 Dark",
+            fg_color=t["btn_raised"],
+            hover_color=t["btn_hover"],
+            border_color=t["btn_border"],
+            text_color=t["text"],
+        )
+        self.btn_folder.configure(
+            fg_color=t["btn_raised"],
+            hover_color=t["btn_hover"],
+            border_color=t["btn_border"],
+            text_color=t["text"],
+        )
+
+        # Control Card
+        self.control_card.configure(fg_color=t["card_bg"], border_color=t["card_border"])
+        self.lbl_url.configure(text_color=t["accent"])
+        self.url_entry.configure(
+            fg_color=t["inset_bg"],
+            border_color=t["inset_border"],
+            text_color=t["text"],
+            placeholder_text_color=t["dim"],
+        )
+        self.btn_scrape.configure(
+            fg_color=t["accent_card"],
+            hover_color=t["accent_hover"],
+            border_color=t["accent"],
+            text_color=t["accent_text"],
+        )
+        self.lbl_engine.configure(text_color=t["text_subtle"])
+        self.engine_segmented.configure(
+            fg_color=t["inset_bg"],
+            selected_color=t["accent_card"],
+            selected_hover_color=t["accent_hover"],
+            unselected_color=t["inset_bg"],
+            unselected_hover_color=t["btn_hover"],
+            text_color=t["text"],
+        )
+        self.lbl_presets.configure(text_color=t["text_subtle"])
+        self.preset_menu.configure(
+            fg_color=t["btn_raised"],
+            button_color=t["btn_hover"],
+            button_hover_color=t["card_border"],
+            dropdown_fg_color=t["card_bg"],
+            dropdown_hover_color=t["btn_hover"],
+            dropdown_text_color=t["text"],
+            text_color=t["text"],
+        )
+
+        # Main Workspace Card
+        self.workspace_card.configure(fg_color=t["card_bg"], border_color=t["card_border"])
+        self.lbl_table_title.configure(text_color=t["accent"])
+        self.filter_entry.configure(
+            fg_color=t["inset_bg"],
+            border_color=t["inset_border"],
+            text_color=t["text"],
+            placeholder_text_color=t["dim"],
+        )
+        self.table_container.configure(fg_color=t["inset_bg"], border_color=t["inset_border"])
+        self.y_scroll.configure(
+            fg_color=t["inset_bg"],
+            button_color=t["btn_border"],
+            button_hover_color=t["accent"],
+        )
+        self.x_scroll.configure(
+            fg_color=t["inset_bg"],
+            button_color=t["btn_border"],
+            button_hover_color=t["accent"],
+        )
+
+        # Footer Card
+        self.footer_card.configure(fg_color=t["card_bg"], border_color=t["card_border"])
+        self.status_msg.configure(text_color=t["text_subtle"])
+        self.progress_bar.configure(fg_color=t["inset_bg"], progress_color=t["accent"])
+        self.btn_csv.configure(
+            fg_color=t["btn_raised"],
+            hover_color=t["btn_hover"],
+            border_color=t["btn_border"],
+            text_color=t["text"],
+        )
+        self.btn_json.configure(
+            fg_color=t["btn_raised"],
+            hover_color=t["btn_hover"],
+            border_color=t["btn_border"],
+            text_color=t["text"],
+        )
+        self.btn_clear.configure(
+            fg_color=t["btn_raised"],
+            hover_color=t["btn_hover"],
+            border_color=t["btn_border"],
+            text_color=t["muted"],
+        )
+
+        # Treeview styling
+        self._init_ttk_styles()
 
     # -------------------------------------------------------------------------
     # APP WORKFLOW & WORKERS
@@ -551,7 +726,7 @@ class ScrapeAgentApp(ctk.CTk):
 
         self.is_scraping = True
         self.btn_scrape.configure(state="disabled", text="EXTRACTING...")
-        self.status_dot.configure(text_color=NEU["warning"])
+        self.status_dot.configure(text_color=self.theme["warning"])
         self.status_text.configure(text="BUSY")
         self.status_msg.configure(text=f"Connecting to {url}...")
 
@@ -623,7 +798,7 @@ class ScrapeAgentApp(ctk.CTk):
         self.progress_bar.stop()
         self.progress_bar.pack_forget()
         self.btn_scrape.configure(state="normal", text="SCRAPE DATA")
-        self.status_dot.configure(text_color=NEU["success"])
+        self.status_dot.configure(text_color=self.theme["success"])
         self.status_text.configure(text="READY")
 
     def render_table(self, records: list[dict]):
