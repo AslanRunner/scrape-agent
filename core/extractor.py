@@ -1,4 +1,4 @@
-"""Universal data extractor engine for ScrapeAgent."""
+"""Otomatik veri çıkarma modülü."""
 import json
 import re
 from urllib.parse import urljoin
@@ -6,11 +6,7 @@ from bs4 import BeautifulSoup, Tag
 
 
 class UniversalExtractor:
-    """
-    Intelligent extractor capable of identifying repeating item patterns
-    (products, articles, listings) as well as single-entity structured metadata (JSON-LD, OpenGraph)
-    across any website.
-    """
+    """HTML sayfalarındaki tekrarlayan liste, kart ve tablo yapılarını otomatik çıkarır."""
 
     def __init__(self, base_url: str):
         self.base_url = base_url

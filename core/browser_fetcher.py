@@ -1,23 +1,9 @@
-"""
-Headless browser rendering module using Playwright.
-Executes client-side JavaScript, handles dynamic Single-Page Applications (SPA),
-and retrieves fully rendered DOM markup.
-"""
+"""Playwright tarayıcı render modülü."""
 import sys
 
 
 def fetch_page_browser(url: str, timeout_ms: int = 30000, headless: bool = True) -> str:
-    """
-    Render a web page using a headless Chromium browser instance.
-
-    Args:
-        url: Target web page URL.
-        timeout_ms: Maximum navigation timeout in milliseconds.
-        headless: Whether to run the browser in headless mode.
-
-    Returns:
-        Fully rendered HTML source string.
-    """
+    """Dinamik JavaScript sayfalarını Chromium ile render edip HTML döndürür."""
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:

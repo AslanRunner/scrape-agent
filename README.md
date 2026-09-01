@@ -1,174 +1,91 @@
 # ScrapeAgent
 
-Autonomous Web Scraping, Pattern Discovery, and Structured Data Extraction Engine.
-
-[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Code Style](https://img.shields.io/badge/code%20style-pep8-green.svg)](https://peps.python.org/pep-0008/)
+Web sitelerinden otomatik olarak yapısal veri (tablolar, kartlar, listeler vb.) çıkaran ve CSV/JSON formatında dışa aktaran masaüstü ve komut satırı aracı.
 
 ---
 
-## Overview
+## Özellikler
 
-**ScrapeAgent** is a modular web scraping and extraction engine built in Python. Unlike conventional scrapers that rely on fragile, site-specific CSS selectors, ScrapeAgent employs structural heuristics to sanitize noisy HTML, identify repeating entity containers (e.g., product listings, articles, cards), and extract structured datasets dynamically.
-
-The system also includes an end-to-end data pipeline: multi-page pagination with rate limiting, two-level detail page enrichment, and an in-memory interactive query REPL backed by pandas.
-
----
-
-## Key Capabilities
-
-- **Universal Pattern Discovery**: Automatically detects recurring DOM clusters and repeating entities across arbitrary websites without manual selector mapping.
-- **Noise Filtration & DOM Sanitization**: Removes non-semantic tags (`script`, `style`, `noscript`, `svg`, `iframe`) while preserving structured metadata (`application/ld+json`, OpenGraph).
-- **Resilient HTTP Client**: Enforces polite `User-Agent` headers, automatic character encoding detection (handling currency symbols and multi-byte characters), and timeout protection.
-- **Bot & Challenge Detection**: Identifies automated challenge walls (e.g., Cloudflare, reCAPTCHA) and produces actionable diagnostics.
-- **Multi-Level Extraction Pipeline**: Crawls catalog listing pages and recursively enriches entities by fetching detail pages for deep attributes.
-- **Interactive Query Engine**: Provides an in-terminal REPL to search, filter with boolean masks, sort, compute aggregate statistics, and export sub-views to CSV.
+- **Şablonsuz Veri Çıkarma:** Manuel CSS veya XPath seçicisi girmeden sayfadaki tekrarlayan yapıları (ürünler, haberler, listeler ve tablolar) otomatik tespit eder.
+- **İki Farklı Çalışma Motoru:**
+  - **Hızlı HTTP:** Standart HTML sayfaları için hafif ve hızlı istek motoru.
+  - **Playwright (Chromium):** JavaScript ile sonradan yüklenen dinamik sayfalar (SPA) için tam tarayıcı render desteği.
+- **Karanlık ve Aydınlık Tema:** Gözü yormayan modern sıcak kehribar (Warm Amber) renk paleti ve tek tıkla mod geçişi.
+- **Canlı Tablo ve Arama:** Çekilen verileri arayüzdeki tabloda görüntüleme ve anlık arama/filtreleme.
+- **Dışa Aktarma:** Verileri tek tıkla `.csv` veya `.json` olarak kaydetme.
+- **CLI & GUI:** İster grafik arayüzden, ister terminalden tek komutla kullanım.
 
 ---
 
-## Architecture
+## Kurulum
 
-```mermaid
-flowchart TD
-    A["Target URL / Input"] --> B["core.fetcher / core.browser_fetcher (HTTP & Playwright)"]
-    B --> C["core.cleaner (DOM Sanitization & Noise Removal)"]
-    C --> D["core.extractor (Universal Clustering & Schema Parsing)"]
-    D --> E["core.exporter (CSV / JSON Serialization)"]
-    D --> F["desktop_gui.py / agent.py (Interactive UI & Data View)"]
-```
-
----
-
-## Directory Structure
-
-```text
-scrape-agent/
-|-- desktop_gui.py         # Modern Neumorphic Desktop GUI Application (CustomTkinter)
-|-- ScrapeAgent.vbs        # Zero-terminal silent desktop launcher (instant launch)
-|-- ScrapeAgent.bat        # Windows batch desktop application launcher
-|-- run.bat                # Interactive terminal CLI launcher
-|-- agent.py               # Core CLI agent interface
-|-- config.py              # Central configuration (User-Agents, timeouts, output paths)
-|-- assets/                # Application branding & Windows icon assets
-|   |-- scrape_agent.ico   # High-resolution multi-size Windows icon (16x16 to 256x256)
-|   |-- scrape_agent.png   # High-resolution emblem graphics
-|-- output/                # Dedicated folder for extracted datasets
-|   |-- .gitkeep
-|-- requirements.txt       # Project dependencies
-|-- core/                  # Core extraction framework
-|   |-- __init__.py
-|   |-- fetcher.py         # Resilient HTTP transport layer
-|   |-- browser_fetcher.py # Headless browser transport (Playwright & stealth Chrome)
-|   |-- cleaner.py         # Markup sanitization and JSON-LD retention
-|   |-- extractor.py       # Heuristic pattern discovery, table parser & entity extractor
-|   |-- exporter.py        # Multi-format data serialization
-```
-
----
-
-## Installation
-
-### Prerequisites
-
-- Python 3.10 or higher
-- pip package manager
-
-### Setup
-
-Clone the repository and install the dependencies:
-
+1. Depoyu klonlayın ve klasöre girin:
 ```bash
 git clone https://github.com/AslanRunner/scrape-agent.git
 cd scrape-agent
-python -m pip install -r requirements.txt
 ```
 
-*(Optional for dynamic JavaScript / Single-Page Application rendering)*:
+2. Gerekli kütüphaneleri yükleyin:
+```bash
+pip install -r requirements.txt
+```
+
+3. *(Opsiyonel - Dinamik JavaScript sitelerini tarayıcı ile kazımak için)*:
 ```bash
 playwright install chromium
 ```
 
 ---
 
-## Usage Guide
+## Kullanım
 
-### 1. Native Desktop GUI Application
-
-Launch the desktop application with zero console windows by double-clicking **`ScrapeAgent.vbs`** (or **`ScrapeAgent.bat`**), or execute:
+### 1. Masaüstü Grafik Arayüzü (GUI)
+Uygulamayı başlatmak için `ScrapeAgent.bat` dosyasına çift tıklayabilir veya terminalden çalıştırabilirsiniz:
 
 ```bash
-pythonw desktop_gui.py
+python desktop_gui.py
 ```
 
-**Desktop GUI Features:**
-- **Zero-Terminal Window**: Opens instantly as a pure native Windows window without any CMD terminal flash.
-- **URL Extraction Bar**: Input any target web address directly, toggle between HTTP Engine and Playwright Chromium, and extract with one click.
-- **Full-Window Interactive Table**: View and explore extracted records in a responsive, scrollable table with real-time text filtering.
-- **One-Click Exports**: Save extracted datasets directly to CSV or JSON with native Windows save dialogs.
-- **One-Click Folder Access**: Open the output directory in Windows File Explorer.
+### 2. Komut Satırı (CLI)
 
----
-
-### 2. Command-Line Interface (CLI)
-
-#### Interactive Terminal Menu
+**Etkileşimli Menü:**
 ```bash
 python agent.py
 ```
 
-#### Direct Headless URL Extraction
+**Doğrudan Komutla Kazıma:**
 ```bash
-# Export extracted items to CSV
-python agent.py --url "https://books.toscrape.com/" --output "books.csv"
+# Standart HTTP ile CSV olarak kaydetme
+python agent.py --url "https://ornek-site.com" --output "veriler.csv"
 
-# Export extracted items to JSON
-python agent.py --url "https://books.toscrape.com/" --output "books.json"
-
-# Scrape dynamic JavaScript / SPA pages using headless browser
-python agent.py --url "https://example.com" --browser --output "rendered_data.csv"
+# Dinamik JavaScript siteleri için tarayıcı motoruyla kazıma
+python agent.py --url "https://ornek-site.com" --browser --output "veriler.json"
 ```
 
 ---
 
-## Technical Specifications
+## Proje Yapısı
 
-| Component | Implementation |
-| :--- | :--- |
-| **HTTP Transport** | `requests` with custom headers, configurable timeout, and explicit encoding fallback |
-| **Browser Engine** | `Playwright` (Headless Chromium with navigator evasions for dynamic SPA rendering) |
-| **DOM Parsing** | `BeautifulSoup4` (`html.parser`) |
-| **Desktop GUI** | `CustomTkinter` (Modern neumorphic dark theme) |
-| **Serialization** | Standard library `csv` (`DictWriter`, UTF-8, strict newline handling) and `json` |
-
----
-
-## Roadmap
-
-- [x] Polite HTTP client with automatic charset detection
-- [x] Markup noise suppression and JSON-LD preservation
-- [x] Heuristic repeating entity detection
-- [x] Anti-bot and challenge screen diagnostics
-- [x] Multi-page automated pagination crawling
-- [x] Two-level scraping with detail page attribute enrichment
-- [x] In-terminal interactive analysis REPL
-- [x] Headless browser integration (Playwright) for client-side rendered (SPA) sites
-- [ ] Automated proxy rotation and request concurrency pool
-- [ ] LLM function-calling integration for natural language schema extraction
+```text
+scrape-agent/
+├── desktop_gui.py      # CustomTkinter tabanlı masaüstü grafik arayüzü
+├── agent.py            # Komut satırı arayüzü ve terminal menüsü
+├── config.py           # Zaman aşımı ve çıktı klasörü ayarları
+├── ScrapeAgent.bat     # Windows başlatıcı
+├── run.bat             # Terminal başlatıcı
+├── requirements.txt    # Python bağımlılıkları
+├── assets/             # İkon ve görsel dosyaları
+├── output/             # Çıkarılan verilerin kaydedildiği klasör
+└── core/               # Kazıma motoru çekirdek modülleri
+    ├── fetcher.py      # HTTP istek modülü (requests)
+    ├── browser_fetcher.py # Headless Chromium modülü (Playwright)
+    ├── cleaner.py      # HTML temizleme ve ayrıştırma
+    ├── extractor.py    # Otomatik yapısal veri çıkarma motoru
+    └── exporter.py     # CSV ve JSON dönüştürücü
+```
 
 ---
 
-## Legal & Ethical Scraping Policy
+## Lisans
 
-ScrapeAgent is developed strictly for educational, testing, and research purposes. Web scraping activities are subject to legal and regulatory frameworks, as well as the target platform's Terms of Service (ToS).
-
-- **Respect robots.txt**: Verify each target website's `robots.txt` policy and crawl directives prior to extraction.
-- **Rate Limiting & Politeness**: Do not overwhelm remote servers. Use sensible delays between requests to prevent service degradation.
-- **Data Privacy**: Ensure compliance with applicable data privacy regulations (e.g., GDPR, KVKK, CCPA). Do not collect or distribute personally identifiable information (PII).
-- **Responsibility**: The user assumes all responsibility and liability for their use of this software, including adherence to platform-specific Terms of Service and local laws.
-
----
-
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+Bu proje [MIT](LICENSE) lisansı ile lisanslanmıştır.

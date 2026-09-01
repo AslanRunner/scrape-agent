@@ -1,20 +1,10 @@
-"""HTTP fetcher module for ScrapeAgent with polite headers and robust encoding."""
+"""Web istek modülü."""
 import requests
 from config import DEFAULT_USER_AGENT, DEFAULT_TIMEOUT
 
 
 def fetch_page(url: str, user_agent: str = DEFAULT_USER_AGENT, timeout: int = DEFAULT_TIMEOUT) -> requests.Response:
-    """
-    Fetch web page safely with headers, timeout, and character encoding detection.
-
-    Args:
-        url: Target web page URL.
-        user_agent: Custom User-Agent header string.
-        timeout: Request timeout in seconds.
-
-    Returns:
-        requests.Response object with clean utf-8 encoding.
-    """
+    """Hedef sayfayı requests ile çeker ve UTF-8 kodlamasını garanti eder."""
     headers = {
         "User-Agent": user_agent,
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",

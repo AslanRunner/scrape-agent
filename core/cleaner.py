@@ -1,4 +1,4 @@
-"""HTML cleaner and DOM optimizer module for ScrapeAgent."""
+"""HTML temizleme modülü."""
 from bs4 import BeautifulSoup, Comment
 
 UNWANTED_TAGS = [
@@ -14,16 +14,7 @@ UNWANTED_TAGS = [
 
 
 def clean_html(html_content: str) -> BeautifulSoup:
-    """
-    Parse HTML and strip noise (scripts, styles, tracking tags, comments)
-    while preserving structured JSON-LD data scripts.
-
-    Args:
-        html_content: Raw HTML string.
-
-    Returns:
-        Cleaned BeautifulSoup tree.
-    """
+    """Gereksiz etiketleri ve yorumları HTML içeriğinden temizler."""
     soup = BeautifulSoup(html_content, "html.parser")
 
     # Remove comments

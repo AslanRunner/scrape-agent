@@ -1,8 +1,4 @@
-"""
-ScrapeAgent - Desktop Local Application.
-Command-line interface for universal web scraping, dynamic browser rendering,
-and local dataset search & analytics.
-"""
+"""ScrapeAgent komut satırı arayüzü."""
 import argparse
 import os
 import re
@@ -10,7 +6,6 @@ import subprocess
 import sys
 from urllib.parse import urlparse
 
-# Force UTF-8 output in Windows terminals
 if sys.platform == "win32":
     try:
         sys.stdout.reconfigure(encoding="utf-8")
@@ -21,18 +16,7 @@ from core.fetcher import fetch_page
 from core.cleaner import clean_html
 from core.extractor import UniversalExtractor
 from core.exporter import export_data
-
-BANNER = r"""
-======================================================================
-   _____                               ___                    _   
-  / ___/______________ _____  ___     /   | ____ ____  ____  / /_ 
-  \__ \/ ___/ ___/ __ `/ __ \/ _ \   / /| |/ __ `/ _ \/ __ \/ __/ 
- ___/ / /__/ /  / /_/ / /_/ /  __/  / ___ / /_/ /  __/ / / / /_   
-/____/\___/_/   \__,_/ .___/\___/  /_/  |_\__, /\___/_/ /_/\__/   
-                    /_/                  /____/                   
-       ScrapeAgent - Local Desktop Scraping Application
-======================================================================
-"""
+from config import DEFAULT_OUTPUT_DIR
 
 URL_REGEX = re.compile(
     r"^https?://"
@@ -46,7 +30,6 @@ URL_REGEX = re.compile(
 
 
 def normalize_url(url: str) -> str:
-    """Ensure URL has an http/https scheme and is stripped of whitespace."""
     url = url.strip()
     if not url.startswith(("http://", "https://")):
         url = "https://" + url
@@ -54,7 +37,6 @@ def normalize_url(url: str) -> str:
 
 
 def is_valid_url(url: str) -> bool:
-    """Validate that the provided string is a syntactically valid HTTP/HTTPS URL."""
     if not url or not isinstance(url, str):
         return False
     normalized = normalize_url(url)
@@ -68,7 +50,6 @@ def is_valid_url(url: str) -> bool:
 
 
 def derive_default_filename(url: str, ext: str = "csv") -> str:
-    """Derive a clean, readable default filename based on the URL domain and path."""
     parsed = urlparse(url)
     domain = parsed.netloc.replace("www.", "")
     slug = re.sub(r"[^a-zA-Z0-9]", "_", domain)
@@ -80,176 +61,146 @@ def derive_default_filename(url: str, ext: str = "csv") -> str:
 
 
 def check_bot_protection(soup) -> str | None:
-    """Detect common anti-bot challenge screens (Cloudflare, reCAPTCHA, Datadome)."""
     title = soup.find("title")
     title_text = title.get_text().lower() if title else ""
     if any(sig in title_text for sig in ["recaptcha", "checking your browser", "just a moment...", "cloudflare"]):
-        return "Cloudflare / reCAPTCHA Challenge (Bot Protection)"
+        return "Cloudflare / reCAPTCHA"
     if any(sig in title_text for sig in ["attention required", "access denied", "security check", "robot or human?"]):
-        return "Access Denied / Anti-Bot Security Block"
+        return "Erişim Engellendi (Bot Koruması)"
     return None
 
 
 def run_agent(url: str, output_path: str | None = None, use_browser: bool = False) -> None:
-    """Execute scraping pipeline on target URL and export dataset."""
     if not is_valid_url(url):
-        print(f"\n[!] Invalid URL provided: '{url}'")
-        print("[i] Please supply a valid address (e.g. 'https://books.toscrape.com' or 'example.com').")
+        print(f"Hata: Geçersiz URL -> '{url}'")
         return
 
     url = normalize_url(url)
     if not output_path:
-        from config import DEFAULT_OUTPUT_DIR
         output_path = os.path.join(DEFAULT_OUTPUT_DIR, derive_default_filename(url, ext="csv"))
 
-    mode_label = "Headless Browser (Playwright)" if use_browser else "HTTP Engine"
-    print(f"\n[+] Navigating to: {url} [{mode_label}]")
+    engine = "Playwright" if use_browser else "HTTP"
+    print(f"\nBağlanılıyor: {url} [{engine}]")
 
     try:
-        # Step 1: Fetch
         if use_browser:
-            print("[+] Launching Chromium and executing client scripts...")
             from core.browser_fetcher import fetch_page_browser
             html_text = fetch_page_browser(url)
-            print(f"[+] DOM rendered successfully ({len(html_text) // 1024} KB markup)")
         else:
             response = fetch_page(url)
-            size_kb = len(response.content) // 1024
-            print(f"[+] Status {response.status_code} OK ({size_kb} KB received)")
             html_text = response.text
 
-        # Step 2: Clean & Parse
-        print("[+] Sanitizing HTML and stripping noise tags...")
         soup = clean_html(html_text)
 
-        # Check for Bot Protection / Cloudflare Block
-        block_reason = check_bot_protection(soup)
-        if block_reason:
-            print(f"\n[!] Anti-Bot Protection Detected: {block_reason}")
-            print("[i] The website blocked automated Python requests and served a verification screen.")
-            if not use_browser:
-                print("[i] Hint: Try running with the '--browser' option to render with a real browser engine.")
-            print(f"[i] Note: '{output_path}' was not generated because the request was blocked.")
+        block = check_bot_protection(soup)
+        if block:
+            print(f"Bot engeli tespit edildi: {block}")
             return
 
-        # Step 3: Extract
-        print("[+] Universal Extractor analyzing DOM structure...")
         extractor = UniversalExtractor(base_url=url)
         results = extractor.extract_all(soup)
 
         if not results:
-            print("\n[-] No structured data could be extracted.")
+            print("Sayfada yapısal veri bulunamadı.")
             if not use_browser:
-                print("[i] The page might be a Client-Side Rendered (SPA) app where content is injected via JavaScript.")
-                print("[i] Hint: Try running with '--browser' to execute client scripts before parsing.")
-            print(f"[i] Note: '{output_path}' was not created because no records were found.")
+                print("İpucu: JavaScript tabanlı siteler için '--browser' seçeneğini deneyebilirsiniz.")
             return
 
-        print(f"[+] Discovered {len(results)} structured items.\n")
+        print(f"{len(results)} kayıt çıkarıldı.\n")
 
-        # Preview first 5 items
-        print("--- Record Preview ---")
+        # İlk 5 kaydı önizleme olarak göster
+        print("--- İlk 5 Kayıt ---")
         for i, item in enumerate(results[:5], 1):
-            title = item.get("title", "No Title")
-            disp_title = title if len(title) <= 48 else title[:45] + "..."
+            title = item.get("title", "Başlık Yok")
+            disp_title = title if len(title) <= 50 else title[:47] + "..."
             price_info = f"{item.get('currency', '')}{item.get('price', '')}" if "price" in item else ""
-            print(f"  {i:>2}. {disp_title:<50} {price_info}")
-            if "url" in item:
-                print(f"      Link: {item['url']}")
+            print(f"  {i}. {disp_title} {price_info}")
 
         if len(results) > 5:
-            print(f"  ... and {len(results) - 5} more items.")
+            print(f"  ... ve {len(results) - 5} kayıt daha.")
 
-        # Step 4: Export
         saved_file = export_data(results, output_path)
-        print(f"\n[+] Results successfully exported to:")
-        print(f"    {saved_file}")
+        print(f"\nKaydedildi: {saved_file}")
 
     except Exception as e:
-        print(f"\n[!] Error during scraping: {e}")
+        print(f"Hata: {e}")
 
 
 def open_output_folder():
-    """Open dedicated output directory in Windows File Explorer silently."""
-    from config import DEFAULT_OUTPUT_DIR
     os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True)
-    print(f"\n[+] Opening folder in File Explorer: {DEFAULT_OUTPUT_DIR}")
+    print(f"\nKlasör açılıyor: {DEFAULT_OUTPUT_DIR}")
     if sys.platform == "win32":
         os.startfile(DEFAULT_OUTPUT_DIR)
     else:
-        import subprocess
         subprocess.Popen(["xdg-open", DEFAULT_OUTPUT_DIR])
 
 
 def launch_gui():
-    """Launch the modern desktop GUI application."""
     script_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "desktop_gui.py")
-    print(f"\n[+] Launching ScrapeAgent Desktop GUI...")
+    print("\nMasaüstü arayüzü başlatılıyor...")
     subprocess.Popen([sys.executable, script_path])
 
 
-def interactive_desktop_app():
-    """Main interactive desktop application loop."""
+def interactive_menu():
     while True:
-        print(BANNER)
-        print("Menu Options:")
-        print("  1. Scrape a custom URL (HTTP Engine - Fast)")
-        print("  2. Scrape a custom URL (Headless Browser - Dynamic JS / Playwright)")
-        print("  3. Launch Desktop GUI Application")
-        print("  4. Open Output Folder in File Explorer")
-        print("  5. Exit")
+        print("\n==============================")
+        print("         ScrapeAgent          ")
+        print("==============================")
+        print("1. URL Kazı (Hızlı HTTP)")
+        print("2. URL Kazı (Playwright Tarayıcı)")
+        print("3. Masaüstü Arayüzünü Başlat")
+        print("4. Çıktı Klasörünü Aç")
+        print("5. Çıkış")
 
-        choice = input("\nSelect an option (1-5) [1]: ").strip() or "1"
+        choice = input("\nSeçiminiz (1-5) [1]: ").strip() or "1"
 
-        if choice == "1" or choice == "2":
+        if choice in ("1", "2"):
             use_browser = choice == "2"
             while True:
-                raw_url = input("\nEnter target URL to scrape (or 'cancel'): ").strip()
-                if not raw_url or raw_url.lower() == "cancel":
-                    print("Operation cancelled.")
+                raw_url = input("\nHedef URL ('iptal' için boş bırakın): ").strip()
+                if not raw_url or raw_url.lower() == "iptal":
                     break
                 if is_valid_url(raw_url):
                     url = normalize_url(raw_url)
                     auto_name = derive_default_filename(url, ext="csv")
-                    out_input = input(f"Output CSV/JSON filename [press Enter for '{auto_name}']: ").strip()
+                    out_input = input(f"Dosya adı [Enter: '{auto_name}']: ").strip()
                     output_file = out_input if out_input else auto_name
                     run_agent(url, output_path=output_file, use_browser=use_browser)
                     break
-                print(f"[-] Invalid URL format: '{raw_url}'. Example: 'books.toscrape.com'")
+                print(f"Geçersiz URL formatı: '{raw_url}'")
 
-            input("\nPress Enter to return to menu...")
+            input("\nMenüye dönmek için Enter'a basın...")
 
         elif choice == "3":
             launch_gui()
-            input("\nPress Enter to return to menu...")
+            input("\nMenüye dönmek için Enter'a basın...")
 
         elif choice == "4":
             open_output_folder()
-            input("\nPress Enter to return to menu...")
+            input("\nMenüye dönmek için Enter'a basın...")
 
         elif choice == "5":
-            print("\nGoodbye!")
+            print("\nÇıkış yapıldı.")
             break
         else:
-            print("Invalid option selected. Please choose 1-5.")
+            print("Lütfen 1-5 arasında bir değer seçin.")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ScrapeAgent - Desktop Scraping Application")
-    parser.add_argument("--url", "-u", type=str, help="Target URL to scrape directly")
-    parser.add_argument("--output", "-o", type=str, default=None, help="Output file path (.csv or .json)")
-    parser.add_argument("--browser", "-b", action="store_true", help="Render dynamic JavaScript/SPA pages using headless browser (Playwright)")
-    parser.add_argument("--gui", "-g", action="store_true", help="Launch the desktop GUI application")
+    parser = argparse.ArgumentParser(description="ScrapeAgent - Web Veri Kazıyıcı")
+    parser.add_argument("--url", "-u", type=str, help="Kazınacak hedef web adresi")
+    parser.add_argument("--output", "-o", type=str, default=None, help="Çıktı dosyası yolu (.csv veya .json)")
+    parser.add_argument("--browser", "-b", action="store_true", help="Dinamik JavaScript sayfaları için Playwright kullan")
+    parser.add_argument("--gui", "-g", action="store_true", help="Masaüstü grafik arayüzünü başlat")
 
     args = parser.parse_args()
 
     if args.gui:
         launch_gui()
     elif args.url:
-        print(BANNER)
         run_agent(args.url, output_path=args.output, use_browser=args.browser)
     else:
-        interactive_desktop_app()
+        interactive_menu()
 
 
 if __name__ == "__main__":
