@@ -31,11 +31,11 @@ The system also includes an end-to-end data pipeline: multi-page pagination with
 
 ```mermaid
 flowchart TD
-    A["Target URL / Query Input"] --> B["core.fetcher (HTTP Client & Charset Resolution)"]
+    A["Target URL / Input"] --> B["core.fetcher / core.browser_fetcher (HTTP & Playwright)"]
     B --> C["core.cleaner (DOM Sanitization & Noise Removal)"]
     C --> D["core.extractor (Universal Clustering & Schema Parsing)"]
     D --> E["core.exporter (CSV / JSON Serialization)"]
-    D --> F["search_books.py (Interactive Query Engine & Pandas REPL)"]
+    D --> F["desktop_gui.py / agent.py (Interactive UI & Data View)"]
 ```
 
 ---
@@ -45,7 +45,6 @@ flowchart TD
 ```text
 scrape-agent/
 |-- desktop_gui.py         # Modern Neumorphic Desktop GUI Application (CustomTkinter)
-|-- create_shortcut.py     # Custom icon generator & Desktop shortcut installer
 |-- ScrapeAgent.vbs        # Zero-terminal silent desktop launcher (instant launch)
 |-- ScrapeAgent.bat        # Windows batch desktop application launcher
 |-- run.bat                # Interactive terminal CLI launcher
@@ -55,12 +54,7 @@ scrape-agent/
 |   |-- scrape_agent.ico   # High-resolution multi-size Windows icon (16x16 to 256x256)
 |   |-- scrape_agent.png   # High-resolution emblem graphics
 |-- output/                # Dedicated folder for extracted datasets
-|   |-- books.csv          # Single-page baseline dataset (20 books)
-|   |-- all_books.csv      # Full catalog dataset (1,000 books)
 |   |-- .gitkeep
-|-- scrape_books.py        # Single-page catalog scraper (Phase 1)
-|-- scrape_all_books.py    # Multi-page pagination & detail enrichment scraper (Phase 2)
-|-- search_books.py        # Interactive search, filter, and analytics REPL (Phase 3)
 |-- requirements.txt       # Project dependencies
 |-- core/                  # Core extraction framework
 |   |-- __init__.py
@@ -69,9 +63,6 @@ scrape-agent/
 |   |-- cleaner.py         # Markup sanitization and JSON-LD retention
 |   |-- extractor.py       # Heuristic pattern discovery, table parser & entity extractor
 |   |-- exporter.py        # Multi-format data serialization
-|-- examples/              # Specialized scrapers and reference implementations
-|   |-- __init__.py
-|   |-- book_scraper.py
 ```
 
 ---
@@ -93,13 +84,18 @@ cd scrape-agent
 python -m pip install -r requirements.txt
 ```
 
+*(Optional for dynamic JavaScript / Single-Page Application rendering)*:
+```bash
+playwright install chromium
+```
+
 ---
 
 ## Usage Guide
 
 ### 1. Native Desktop GUI Application
 
-Launch the desktop application with zero console windows by double-clicking **`ScrapeAgent.vbs`** (or **`run_desktop_app.bat`** / **`ScrapeAgent.bat`**), or execute:
+Launch the desktop application with zero console windows by double-clicking **`ScrapeAgent.vbs`** (or **`ScrapeAgent.bat`**), or execute:
 
 ```bash
 pythonw desktop_gui.py
@@ -135,53 +131,6 @@ python agent.py --url "https://example.com" --browser --output "rendered_data.cs
 
 ---
 
-### 2. Catalog Scraping Pipeline
-
-#### Phase 1: Single-Page Extraction
-
-Fetches the homepage catalog (20 items), parses title attributes, normalized prices, ratings, and stock status:
-
-```bash
-python scrape_books.py
-```
-
-#### Phase 2: Full Catalog Pagination & Detail Enrichment
-
-Traverses all 50 pagination pages (1,000 items) and performs two-level scraping to retrieve detail attributes (UPC, exact stock count, category, full description):
-
-```bash
-# Scrape the entire catalog (50 pages, 1,000 books)
-python scrape_all_books.py
-
-# Quick test run limited to N pages
-python scrape_all_books.py --pages 3
-```
-
----
-
-### 3. Interactive Search & Analysis REPL
-
-Query and analyze the generated dataset using pandas-backed operations:
-
-```bash
-python search_books.py
-```
-
-#### Supported REPL Commands
-
-| Command | Syntax Example | Description |
-| :--- | :--- | :--- |
-| `stats` | `stats` | Displays catalog statistics (record count, category count, average price, price range, rating breakdown). |
-| `search` | `search mystery` | Performs a case-insensitive substring search across title, description, and category. |
-| `filter` | `filter category=Mystery min_price=30 rating>=4` | Applies combined boolean masks on category, price range, and rating. |
-| `sort` | `sort price desc` | Sorts the current filtered view by column (`asc` or `desc`) without mutating state. |
-| `save` | `save filtered_results.csv` | Exports the current query view to a CSV file. |
-| `reset` | `reset` | Clears all active filters and restores the full catalog view. |
-| `help` | `help` | Prints the available command reference. |
-| `quit` | `quit` | Terminates the REPL session. |
-
----
-
 ## Technical Specifications
 
 | Component | Implementation |
@@ -189,9 +138,8 @@ python search_books.py
 | **HTTP Transport** | `requests` with custom headers, configurable timeout, and explicit encoding fallback |
 | **Browser Engine** | `Playwright` (Headless Chromium with navigator evasions for dynamic SPA rendering) |
 | **DOM Parsing** | `BeautifulSoup4` (`html.parser`) |
-| **Data Engine** | `pandas` (Vectorized boolean indexing, aggregation, series transformation) |
+| **Desktop GUI** | `CustomTkinter` (Modern neumorphic dark theme) |
 | **Serialization** | Standard library `csv` (`DictWriter`, UTF-8, strict newline handling) and `json` |
-| **Rate Limiting** | Configurable inter-request delay (`time.sleep`) to prevent IP throttling |
 
 ---
 

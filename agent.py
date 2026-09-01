@@ -181,6 +181,13 @@ def open_output_folder():
         subprocess.Popen(["xdg-open", DEFAULT_OUTPUT_DIR])
 
 
+def launch_gui():
+    """Launch the modern desktop GUI application."""
+    script_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "desktop_gui.py")
+    print(f"\n[+] Launching ScrapeAgent Desktop GUI...")
+    subprocess.Popen([sys.executable, script_path])
+
+
 def interactive_desktop_app():
     """Main interactive desktop application loop."""
     while True:
@@ -188,12 +195,11 @@ def interactive_desktop_app():
         print("Menu Options:")
         print("  1. Scrape a custom URL (HTTP Engine - Fast)")
         print("  2. Scrape a custom URL (Headless Browser - Dynamic JS / Playwright)")
-        print("  3. Run Book Catalog Scraper (Day 2 Multi-page & Detail pipeline)")
-        print("  4. Search & Analyze Scraped Datasets (Day 3 REPL Engine)")
-        print("  5. Open Output Folder in File Explorer")
-        print("  6. Exit")
+        print("  3. Launch Desktop GUI Application")
+        print("  4. Open Output Folder in File Explorer")
+        print("  5. Exit")
 
-        choice = input("\nSelect an option (1-6) [1]: ").strip() or "1"
+        choice = input("\nSelect an option (1-5) [1]: ").strip() or "1"
 
         if choice == "1" or choice == "2":
             use_browser = choice == "2"
@@ -214,31 +220,18 @@ def interactive_desktop_app():
             input("\nPress Enter to return to menu...")
 
         elif choice == "3":
-            from scrape_all_books import run_full_catalog_scraper
-            pages_input = input("\nEnter number of pages to scrape (1-50) [default: 2]: ").strip() or "2"
-            try:
-                pages_val = int(pages_input)
-            except ValueError:
-                pages_val = 2
-            run_full_catalog_scraper(max_pages=pages_val, output_csv="all_books.csv")
+            launch_gui()
             input("\nPress Enter to return to menu...")
 
         elif choice == "4":
-            from search_books import load_dataset, run_repl, CSV_DEFAULT_FILE
-            target_csv = input(f"\nDataset CSV to load [default: '{CSV_DEFAULT_FILE}']: ").strip() or CSV_DEFAULT_FILE
-            df = load_dataset(target_csv)
-            run_repl(df)
-            input("\nPress Enter to return to menu...")
-
-        elif choice == "5":
             open_output_folder()
             input("\nPress Enter to return to menu...")
 
-        elif choice == "6":
+        elif choice == "5":
             print("\nGoodbye!")
             break
         else:
-            print("Invalid option selected. Please choose 1-6.")
+            print("Invalid option selected. Please choose 1-5.")
 
 
 def main():
@@ -246,13 +239,12 @@ def main():
     parser.add_argument("--url", "-u", type=str, help="Target URL to scrape directly")
     parser.add_argument("--output", "-o", type=str, default=None, help="Output file path (.csv or .json)")
     parser.add_argument("--browser", "-b", action="store_true", help="Render dynamic JavaScript/SPA pages using headless browser (Playwright)")
-    parser.add_argument("--demo", action="store_true", help="Run the books.toscrape.com demo scraper")
+    parser.add_argument("--gui", "-g", action="store_true", help="Launch the desktop GUI application")
 
     args = parser.parse_args()
 
-    if args.demo:
-        from examples.book_scraper import main as run_book_demo
-        run_book_demo()
+    if args.gui:
+        launch_gui()
     elif args.url:
         print(BANNER)
         run_agent(args.url, output_path=args.output, use_browser=args.browser)
