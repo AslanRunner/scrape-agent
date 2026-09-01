@@ -15,7 +15,8 @@ UNWANTED_TAGS = [
 
 def clean_html(html_content: str) -> BeautifulSoup:
     """
-    Parse HTML and strip noise (scripts, styles, tracking tags, comments).
+    Parse HTML and strip noise (scripts, styles, tracking tags, comments)
+    while preserving structured JSON-LD data scripts.
 
     Args:
         html_content: Raw HTML string.
@@ -29,9 +30,16 @@ def clean_html(html_content: str) -> BeautifulSoup:
     for comment in soup.find_all(text=lambda text: isinstance(text, Comment)):
         comment.extract()
 
-    # Remove unwanted noise tags
-    for tag in soup.find_all(UNWANTED_TAGS):
-        tag.decompose()
+    # Remove unwanted scripts, but KEEP type="application/ld+json" (metadata)
+    for script in soup.find_all("script"):
+        script_type = script.get("type", "").lower()
+        if script_type != "application/ld+json":
+            script.decompose()
+
+    # Remove other noise tags
+    for tag_name in ["style", "noscript", "svg", "canvas", "iframe", "form", "button"]:
+        for tag in soup.find_all(tag_name):
+            tag.decompose()
 
     return soup
 

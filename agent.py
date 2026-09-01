@@ -40,6 +40,17 @@ def is_valid_url(url: str) -> bool:
         return False
 
 
+def check_bot_protection(soup) -> str | None:
+    """Detect common anti-bot challenge screens (Cloudflare, reCAPTCHA, Datadome)."""
+    title = soup.find("title")
+    title_text = title.get_text().lower() if title else ""
+    if any(sig in title_text for sig in ["recaptcha", "checking your browser", "just a moment...", "cloudflare"]):
+        return "Cloudflare / reCAPTCHA Challenge (Bot Protection)"
+    if any(sig in title_text for sig in ["attention required", "access denied", "security check", "robot or human?"]):
+        return "Access Denied / Anti-Bot Security Block"
+    return None
+
+
 def run_agent(url: str, output_path: str = "scraped_data.csv") -> None:
     """Execute scraping pipeline on any target URL."""
     print(f"\n[+] Agent navigating to: {url}")
@@ -54,14 +65,24 @@ def run_agent(url: str, output_path: str = "scraped_data.csv") -> None:
         print("[+] Sanitizing HTML & stripping noise...")
         soup = clean_html(response.text)
 
+        # Check for Bot Protection / Cloudflare Block
+        block_reason = check_bot_protection(soup)
+        if block_reason:
+            print(f"\n[!] Anti-Bot Protection Detected: {block_reason}")
+            print("[i] The website blocked automated Python requests and returned a verification/captcha screen.")
+            print("[i] Recommendation: To scrape this site, browser automation (Playwright) or its official API is required.")
+            print(f"[i] Note: '{output_path}' was not generated because the page was blocked.")
+            return
+
         # Step 3: Extract
         print("[+] Universal Extractor analyzing DOM structure...")
         extractor = UniversalExtractor(base_url=url)
         results = extractor.extract_all(soup)
 
         if not results:
-            print("[-] No repeating data cards detected automatically.")
-            print("[i] Site may require JavaScript rendering or custom selector rules.")
+            print("\n[-] No structured data could be extracted.")
+            print("[i] The page might be a Client-Side Rendered (SPA) app where content is injected via JavaScript.")
+            print(f"[i] Note: '{output_path}' was not created because no data records were found.")
             return
 
         print(f"[✓] Discovered {len(results)} structured items!\n")
