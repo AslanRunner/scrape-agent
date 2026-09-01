@@ -44,9 +44,11 @@ flowchart TD
 
 ```text
 scrape-agent/
-|-- run.bat                # Windows desktop double-click launcher
+|-- desktop_gui.py         # Native Windows Desktop GUI Application (Tkinter)
+|-- run_desktop_app.bat    # Windows double-click launcher
 |-- ScrapeAgent.bat        # Windows desktop application shortcut
-|-- agent.py               # Desktop application core interface
+|-- run.bat                # Terminal launcher script
+|-- agent.py               # CLI agent interface
 |-- config.py              # Central configuration (User-Agents, timeouts, export formats)
 |-- scrape_books.py        # Single-page catalog scraper (Phase 1)
 |-- scrape_all_books.py    # Multi-page pagination & detail enrichment scraper (Phase 2)
@@ -89,29 +91,34 @@ python -m pip install -r requirements.txt
 
 ## Usage Guide
 
-### 1. Local Desktop Application (Windows Launcher)
+### 1. Native Desktop GUI Application
 
-Run the desktop application simply by double-clicking **`run.bat`** (or **`ScrapeAgent.bat`**) in Windows Explorer, or execute:
+Run the native desktop application by double-clicking **`run_desktop_app.bat`** (or **`ScrapeAgent.bat`**) in Windows Explorer, or execute:
 
 ```bash
-run.bat
+python desktop_gui.py
 ```
-*(or `python agent.py`)*
 
-The interactive desktop menu provides immediate access to:
-- **Scrape any Custom URL**: Input any link directly, select between the fast HTTP engine or Headless Chromium, and auto-export to CSV/JSON with intelligent default file naming.
-- **Full Catalog Crawling**: Launch multi-page pagination and detail enrichment scrapers with configurable page depth.
-- **Search & Analyze Datasets**: Query, filter, and inspect datasets via the integrated in-terminal pandas REPL.
-- **Open Output Folder**: Open the local output directory in Windows File Explorer with a single keystroke to inspect generated CSV files.
+**Desktop GUI Features:**
+- **URL Extraction Bar**: Paste any target URL directly, select between the fast HTTP client or Playwright Chromium engine, and trigger extraction with one click.
+- **Interactive Treeview Table**: View extracted records in a sortable, scrollable table with an instant live search filter.
+- **Terminal Activity Log**: Real-time console monitor displaying status codes, response sizes, noise sanitization, and pattern discovery.
+- **Direct Exports**: Save results directly to CSV or JSON with native Windows save dialogs.
+- **One-Click Folder Access**: Open the local output folder in Windows File Explorer.
+- **Batch Scraper**: Trigger multi-page crawlers in background threads without freezing the user interface.
 
 ---
 
-### 2. Command-Line Direct Scraping
+### 2. Command-Line Interface (CLI)
 
-Scrape any arbitrary URL directly from the terminal without entering the interactive menu:
-
+#### Interactive Terminal Menu
 ```bash
-# Export extracted items to CSV (auto-names if output omitted)
+python agent.py
+```
+
+#### Direct Headless URL Extraction
+```bash
+# Export extracted items to CSV
 python agent.py --url "https://books.toscrape.com/" --output "books.csv"
 
 # Export extracted items to JSON
