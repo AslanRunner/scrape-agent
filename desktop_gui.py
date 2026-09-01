@@ -25,6 +25,7 @@ from core.fetcher import fetch_page
 from core.cleaner import clean_html
 from core.extractor import UniversalExtractor
 from core.exporter import export_data
+from config import DEFAULT_OUTPUT_DIR
 
 # -----------------------------------------------------------------------------
 # NEUMORPHIC DARK PALETTE (OPTIMIZED HIGH CONTRAST)
@@ -523,12 +524,13 @@ class ScrapeAgentApp(ctk.CTk):
             self.url_entry.insert(0, presets[choice])
 
     def open_output_folder(self):
-        """Open project directory in Windows Explorer."""
-        path = os.path.abspath(PROJECT_ROOT)
+        """Open dedicated output folder in Windows Explorer silently without any terminal."""
+        os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True)
         if sys.platform == "win32":
-            os.system(f'explorer "{path}"')
+            os.startfile(DEFAULT_OUTPUT_DIR)
         else:
-            messagebox.showinfo("Folder Location", path)
+            import subprocess
+            subprocess.Popen(["xdg-open", DEFAULT_OUTPUT_DIR])
 
     def start_scraping(self):
         """Validate URL and initiate background extraction."""
@@ -589,7 +591,9 @@ class ScrapeAgentApp(ctk.CTk):
                 self.after(0, lambda: self._on_scrape_empty(url))
             else:
                 default_file = derive_default_filename(url, ext="csv")
-                export_data(records, default_file)
+                dest_path = os.path.join(DEFAULT_OUTPUT_DIR, default_file)
+                export_data(records, dest_path)
+                self.last_saved_file = default_file
                 self.after(0, lambda: self._on_scrape_success(records, default_file, elapsed))
 
         except Exception as err:
@@ -602,7 +606,7 @@ class ScrapeAgentApp(ctk.CTk):
         """Render records on UI thread."""
         self.current_records = records
         self.render_table(self.current_records)
-        self.status_msg.configure(text=f"Successfully extracted {len(records)} records in {elapsed:.2f}s. Saved to '{filename}'.")
+        self.status_msg.configure(text=f"Successfully extracted {len(records)} records in {elapsed:.2f}s. Saved to output/{filename}")
 
     def _on_scrape_empty(self, url: str):
         """Handle no records."""
@@ -696,34 +700,36 @@ class ScrapeAgentApp(ctk.CTk):
         self.lbl_table_title.configure(text=f"EXTRACTED DATASETS ({len(filtered)} OF {len(self.current_records)} RECORDS)")
 
     def save_csv(self):
-        """Save extracted records as CSV."""
+        """Save extracted records directly into the output folder."""
         if not self.current_records:
             messagebox.showwarning("Empty", "No records available to export.")
             return
 
-        path = filedialog.asksaveasfilename(
-            defaultextension=".csv",
-            filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")],
-            title="Save Extracted Data to CSV",
-        )
-        if path:
-            export_data(self.current_records, path)
-            messagebox.showinfo("Export Complete", f"Successfully exported {len(self.current_records)} records to:\n{path}")
+        filename = getattr(self, "last_saved_file", None)
+        if not filename:
+            raw_url = self.url_entry.get().strip() or "scraped_data"
+            filename = derive_default_filename(raw_url, ext="csv")
+
+        os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True)
+        dest_path = os.path.join(DEFAULT_OUTPUT_DIR, filename)
+        export_data(self.current_records, dest_path)
+        self.status_msg.configure(text=f"Saved {len(self.current_records)} records to: output/{filename}")
+        messagebox.showinfo("Saved", f"Records successfully saved to:\n\noutput/{filename}")
 
     def save_json(self):
-        """Save extracted records as JSON."""
+        """Save extracted records directly as JSON into the output folder."""
         if not self.current_records:
             messagebox.showwarning("Empty", "No records available to export.")
             return
 
-        path = filedialog.asksaveasfilename(
-            defaultextension=".json",
-            filetypes=[("JSON Files", "*.json"), ("All Files", "*.*")],
-            title="Save Extracted Data to JSON",
-        )
-        if path:
-            export_data(self.current_records, path)
-            messagebox.showinfo("Export Complete", f"Successfully exported {len(self.current_records)} records to:\n{path}")
+        raw_url = self.url_entry.get().strip() or "scraped_data"
+        filename = derive_default_filename(raw_url, ext="json")
+
+        os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True)
+        dest_path = os.path.join(DEFAULT_OUTPUT_DIR, filename)
+        export_data(self.current_records, dest_path)
+        self.status_msg.configure(text=f"Saved {len(self.current_records)} records to: output/{filename}")
+        messagebox.showinfo("Saved", f"Records successfully saved to:\n\noutput/{filename}")
 
     def clear_table(self):
         """Clear memory and reset table."""

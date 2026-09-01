@@ -99,7 +99,8 @@ def run_agent(url: str, output_path: str | None = None, use_browser: bool = Fals
 
     url = normalize_url(url)
     if not output_path:
-        output_path = derive_default_filename(url, ext="csv")
+        from config import DEFAULT_OUTPUT_DIR
+        output_path = os.path.join(DEFAULT_OUTPUT_DIR, derive_default_filename(url, ext="csv"))
 
     mode_label = "Headless Browser (Playwright)" if use_browser else "HTTP Engine"
     print(f"\n[+] Navigating to: {url} [{mode_label}]")
@@ -169,13 +170,15 @@ def run_agent(url: str, output_path: str | None = None, use_browser: bool = Fals
 
 
 def open_output_folder():
-    """Open current directory in Windows File Explorer."""
-    current_dir = os.path.abspath(".")
-    print(f"\n[+] Opening folder in File Explorer: {current_dir}")
+    """Open dedicated output directory in Windows File Explorer silently."""
+    from config import DEFAULT_OUTPUT_DIR
+    os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True)
+    print(f"\n[+] Opening folder in File Explorer: {DEFAULT_OUTPUT_DIR}")
     if sys.platform == "win32":
-        os.system(f'explorer "{current_dir}"')
+        os.startfile(DEFAULT_OUTPUT_DIR)
     else:
-        print(f"[i] Working directory: {current_dir}")
+        import subprocess
+        subprocess.Popen(["xdg-open", DEFAULT_OUTPUT_DIR])
 
 
 def interactive_desktop_app():
