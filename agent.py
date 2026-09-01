@@ -4,6 +4,7 @@ CLI Entry point for universal URL scraping and structured data extraction.
 """
 import argparse
 import sys
+import re
 from urllib.parse import urlparse
 
 # Force UTF-8 output in Windows terminals
@@ -30,12 +31,35 @@ BANNER = r"""
           Intelligent & Autonomous Web Scraping Agent
 """
 
+URL_REGEX = re.compile(
+    r"^https?://"
+    r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,63}\.?|"
+    r"localhost|"
+    r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
+    r"(?::\d+)?"
+    r"(?:/?|[/?]\S+)$",
+    re.IGNORECASE,
+)
+
+
+def normalize_url(url: str) -> str:
+    """Ensure URL has an http/https scheme and is stripped of whitespace."""
+    url = url.strip()
+    if not url.startswith(("http://", "https://")):
+        url = "https://" + url
+    return url
+
 
 def is_valid_url(url: str) -> bool:
-    """Validate URL scheme and network location."""
+    """Validate that the provided string is a syntactically valid HTTP/HTTPS URL."""
+    if not url or not isinstance(url, str):
+        return False
+    normalized = normalize_url(url)
     try:
-        result = urlparse(url)
-        return all([result.scheme, result.netloc])
+        parsed = urlparse(normalized)
+        if parsed.scheme not in ("http", "https") or not parsed.netloc:
+            return False
+        return bool(URL_REGEX.match(normalized))
     except Exception:
         return False
 
@@ -53,6 +77,13 @@ def check_bot_protection(soup) -> str | None:
 
 def run_agent(url: str, output_path: str = "scraped_data.csv", use_browser: bool = False) -> None:
     """Execute scraping pipeline on any target URL."""
+    # Validate URL
+    if not is_valid_url(url):
+        print(f"\n[!] Invalid URL provided: '{url}'")
+        print("[i] Please provide a syntactically valid web address (e.g. 'https://books.toscrape.com' or 'example.com').")
+        return
+
+    url = normalize_url(url)
     mode_label = "Headless Browser (Playwright)" if use_browser else "HTTP Engine"
     print(f"\n[+] Agent navigating to: {url} [{mode_label}]")
 
@@ -138,12 +169,15 @@ def interactive_mode():
         sys.exit(0)
     else:
         use_browser = choice == "2"
-        url = input("\nEnter target URL to scrape: ").strip()
-        if not url:
-            print("[-] No URL provided. Exiting.")
-            return
-        if not url.startswith("http://") and not url.startswith("https://"):
-            url = "https://" + url
+        while True:
+            raw_url = input("\nEnter target URL to scrape (or 'cancel'): ").strip()
+            if not raw_url or raw_url.lower() == "cancel":
+                print("[-] Operation cancelled.")
+                return
+            if is_valid_url(raw_url):
+                url = normalize_url(raw_url)
+                break
+            print(f"[-] Invalid URL format: '{raw_url}'. Please enter a valid address (e.g. 'books.toscrape.com').")
 
         output = input("Output file path (default: scraped_data.csv): ").strip() or "scraped_data.csv"
         run_agent(url, output, use_browser=use_browser)
