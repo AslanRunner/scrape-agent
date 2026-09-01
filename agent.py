@@ -51,26 +51,35 @@ def check_bot_protection(soup) -> str | None:
     return None
 
 
-def run_agent(url: str, output_path: str = "scraped_data.csv") -> None:
+def run_agent(url: str, output_path: str = "scraped_data.csv", use_browser: bool = False) -> None:
     """Execute scraping pipeline on any target URL."""
-    print(f"\n[+] Agent navigating to: {url}")
+    mode_label = "Headless Browser (Playwright)" if use_browser else "HTTP Engine"
+    print(f"\n[+] Agent navigating to: {url} [{mode_label}]")
 
     try:
         # Step 1: Fetch
-        response = fetch_page(url)
-        size_kb = len(response.content) // 1024
-        print(f"[✓] Status {response.status_code} OK ({size_kb} KB received)")
+        if use_browser:
+            print("[+] Launching Chromium and executing client-side JavaScript...")
+            from core.browser_fetcher import fetch_page_browser
+            html_text = fetch_page_browser(url)
+            print(f"[✓] DOM rendered successfully ({len(html_text) // 1024} KB markup)")
+        else:
+            response = fetch_page(url)
+            size_kb = len(response.content) // 1024
+            print(f"[✓] Status {response.status_code} OK ({size_kb} KB received)")
+            html_text = response.text
 
         # Step 2: Clean & Parse
         print("[+] Sanitizing HTML & stripping noise...")
-        soup = clean_html(response.text)
+        soup = clean_html(html_text)
 
         # Check for Bot Protection / Cloudflare Block
         block_reason = check_bot_protection(soup)
         if block_reason:
             print(f"\n[!] Anti-Bot Protection Detected: {block_reason}")
             print("[i] The website blocked automated Python requests and returned a verification/captcha screen.")
-            print("[i] Recommendation: To scrape this site, browser automation (Playwright) or its official API is required.")
+            if not use_browser:
+                print("[i] Hint: Try running with the '--browser' flag to render with a real browser engine.")
             print(f"[i] Note: '{output_path}' was not generated because the page was blocked.")
             return
 
@@ -81,7 +90,9 @@ def run_agent(url: str, output_path: str = "scraped_data.csv") -> None:
 
         if not results:
             print("\n[-] No structured data could be extracted.")
-            print("[i] The page might be a Client-Side Rendered (SPA) app where content is injected via JavaScript.")
+            if not use_browser:
+                print("[i] The page might be a Client-Side Rendered (SPA) app where content is injected via JavaScript.")
+                print("[i] Hint: Try running with '--browser' to execute client scripts before parsing.")
             print(f"[i] Note: '{output_path}' was not created because no data records were found.")
             return
 
@@ -112,19 +123,21 @@ def interactive_mode():
     """Start interactive command-line agent session."""
     print(BANNER)
     print("Welcome to ScrapeAgent! You can scrape any URL or run preset scenarios.")
-    print("1. Scrape a custom URL (Universal Pattern Discovery)")
-    print("2. Run Book Catalog Scraper (books.toscrape.com demo)")
-    print("3. Exit")
+    print("1. Scrape a custom URL (HTTP Engine)")
+    print("2. Scrape a custom URL (Headless Browser / Playwright)")
+    print("3. Run Book Catalog Scraper (books.toscrape.com demo)")
+    print("4. Exit")
 
-    choice = input("\nSelect an option (1-3) [1]: ").strip() or "1"
+    choice = input("\nSelect an option (1-4) [1]: ").strip() or "1"
 
-    if choice == "2":
+    if choice == "3":
         from examples.book_scraper import main as run_book_demo
         run_book_demo()
-    elif choice == "3":
+    elif choice == "4":
         print("Goodbye!")
         sys.exit(0)
     else:
+        use_browser = choice == "2"
         url = input("\nEnter target URL to scrape: ").strip()
         if not url:
             print("[-] No URL provided. Exiting.")
@@ -133,13 +146,14 @@ def interactive_mode():
             url = "https://" + url
 
         output = input("Output file path (default: scraped_data.csv): ").strip() or "scraped_data.csv"
-        run_agent(url, output)
+        run_agent(url, output, use_browser=use_browser)
 
 
 def main():
     parser = argparse.ArgumentParser(description="ScrapeAgent - Autonomous Web Scraping Agent")
     parser.add_argument("--url", "-u", type=str, help="Target URL to scrape")
     parser.add_argument("--output", "-o", type=str, default="scraped_data.csv", help="Output file path (.csv or .json)")
+    parser.add_argument("--browser", "-b", action="store_true", help="Render dynamic JavaScript/SPA pages using headless browser (Playwright)")
     parser.add_argument("--demo", action="store_true", help="Run the books.toscrape.com demo scraper")
 
     args = parser.parse_args()
@@ -149,7 +163,7 @@ def main():
         run_book_demo()
     elif args.url:
         print(BANNER)
-        run_agent(args.url, args.output)
+        run_agent(args.url, args.output, use_browser=args.browser)
     else:
         interactive_mode()
 

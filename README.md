@@ -106,6 +106,9 @@ python agent.py --url "https://books.toscrape.com/" --output "scraped_data.csv"
 
 # Export extracted items to JSON
 python agent.py --url "https://books.toscrape.com/" --output "scraped_data.json"
+
+# Scrape dynamic JavaScript / SPA pages using headless browser
+python agent.py --url "https://example.com" --browser --output "rendered_data.csv"
 ```
 
 ---
@@ -162,6 +165,7 @@ python search_books.py
 | Component | Implementation |
 | :--- | :--- |
 | **HTTP Transport** | `requests` with custom headers, configurable timeout, and explicit encoding fallback |
+| **Browser Engine** | `Playwright` (Headless Chromium with navigator evasions for dynamic SPA rendering) |
 | **DOM Parsing** | `BeautifulSoup4` (`html.parser`) |
 | **Data Engine** | `pandas` (Vectorized boolean indexing, aggregation, series transformation) |
 | **Serialization** | Standard library `csv` (`DictWriter`, UTF-8, strict newline handling) and `json` |
@@ -178,9 +182,20 @@ python search_books.py
 - [x] Multi-page automated pagination crawling
 - [x] Two-level scraping with detail page attribute enrichment
 - [x] In-terminal interactive analysis REPL
-- [ ] Headless browser integration (Playwright) for client-side rendered (SPA) sites
+- [x] Headless browser integration (Playwright) for client-side rendered (SPA) sites
 - [ ] Automated proxy rotation and request concurrency pool
 - [ ] LLM function-calling integration for natural language schema extraction
+
+---
+
+## Legal & Ethical Scraping Policy
+
+ScrapeAgent is developed strictly for educational, testing, and research purposes. Web scraping activities are subject to legal and regulatory frameworks, as well as the target platform's Terms of Service (ToS).
+
+- **Respect robots.txt**: Verify each target website's `robots.txt` policy and crawl directives prior to extraction.
+- **Rate Limiting & Politeness**: Do not overwhelm remote servers. Use sensible delays between requests to prevent service degradation.
+- **Data Privacy**: Ensure compliance with applicable data privacy regulations (e.g., GDPR, KVKK, CCPA). Do not collect or distribute personally identifiable information (PII).
+- **Responsibility**: The user assumes all responsibility and liability for their use of this software, including adherence to platform-specific Terms of Service and local laws.
 
 ---
 
