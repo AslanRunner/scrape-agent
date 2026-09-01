@@ -45,11 +45,16 @@ flowchart TD
 ```text
 scrape-agent/
 |-- desktop_gui.py         # Native Windows Desktop GUI Application (Tkinter)
+|-- create_shortcut.py     # Custom icon generator & Desktop shortcut installer
 |-- run_desktop_app.bat    # Windows double-click launcher
 |-- ScrapeAgent.bat        # Windows desktop application shortcut
+|-- ScrapeAgent.vbs        # Zero-terminal silent VBS launcher
 |-- run.bat                # Terminal launcher script
 |-- agent.py               # CLI agent interface
 |-- config.py              # Central configuration (User-Agents, timeouts, export formats)
+|-- assets/                # Application branding & Windows icon assets
+|   |-- scrape_agent.ico   # High-resolution multi-size Windows icon (16x16 to 256x256)
+|   |-- scrape_agent.png   # High-resolution emblem graphics
 |-- scrape_books.py        # Single-page catalog scraper (Phase 1)
 |-- scrape_all_books.py    # Multi-page pagination & detail enrichment scraper (Phase 2)
 |-- search_books.py        # Interactive search, filter, and analytics REPL (Phase 3)

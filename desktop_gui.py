@@ -52,10 +52,15 @@ class ScrapeAgentApp:
         self.root.title("ScrapeAgent · Autonomous Data Extraction")
         self.root.geometry("1120x760")
         self.root.minsize(860, 580)
-        self.root.configure(bg=THEME["bg"])
-
         self.current_records = []
         self.is_scraping = False
+
+        ico_file = os.path.join(PROJECT_ROOT, "assets", "scrape_agent.ico")
+        if os.path.exists(ico_file):
+            try:
+                self.root.iconbitmap(ico_file)
+            except Exception:
+                pass
 
         self._init_styles()
         self._init_ui()
