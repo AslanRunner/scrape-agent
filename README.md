@@ -96,11 +96,20 @@ python agent.py --url "https://books.toscrape.com/" --output "books.csv"
 python agent.py --url "https://books.toscrape.com/" --output "books.json"
 ```
 
-#### C. Run the Book Scraper Preset
+#### C. Run the Single-Page Scraper (Day 1)
 ```bash
-python agent.py --demo
+python scrape_books.py
 ```
-*(or run `python scrape_books.py`)*
+
+#### D. Run the Full Multi-Page Catalog Scraper (Day 2)
+Scrapes all 50 pages (1,000 books) with automated pagination and detail-page enrichment (UPC, stock count, category, full description):
+```bash
+# Full catalog (all 50 pages, 1,000 books)
+python scrape_all_books.py
+
+# Quick test mode (e.g. scrape first 3 pages)
+python scrape_all_books.py --pages 3
+```
 
 ---
 
@@ -140,10 +149,12 @@ Running ScrapeAgent on a catalog produces clean structured data:
 - [x] Polite HTTP fetcher with auto-detected charset encoding
 - [x] HTML noise stripping and DOM cleaner
 - [x] Universal repeating item discovery heuristic
+- [x] Anti-bot and challenge page detection (Cloudflare / reCAPTCHA)
 - [x] CSV & JSON data exporter
+- [x] Multi-page automated pagination crawling (Day 2)
+- [x] Two-level scraping with detail page enrichment (UPC, stock count, categories)
 - [ ] LLM Tool Calling integration (Gemini / OpenAI structured output)
 - [ ] Dynamic JavaScript rendering support via Playwright
 - [ ] Proxy rotation & polite rate-limiting pool
-- [ ] Multi-page automated pagination crawling
 
 
