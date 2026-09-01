@@ -14,16 +14,18 @@ if sys.platform == "win32":
     except AttributeError:
         pass
 
-CSV_DEFAULT_FILE = "all_books.csv"
+CSV_DEFAULT_FILE = os.path.join("output", "all_books.csv")
 
 
 def load_dataset(csv_path: str = CSV_DEFAULT_FILE) -> pd.DataFrame:
     """Load the scraped books CSV into a typed pandas DataFrame."""
     if not os.path.exists(csv_path):
-        # Fallback to books.csv if all_books.csv hasn't been scraped yet
-        if os.path.exists("books.csv"):
-            print(f"[i] '{csv_path}' not found. Loading 'books.csv' instead.")
-            csv_path = "books.csv"
+        # Fallbacks if default output path is not yet populated
+        fallbacks = ["all_books.csv", os.path.join("output", "books.csv"), "books.csv"]
+        found = next((f for f in fallbacks if os.path.exists(f)), None)
+        if found:
+            print(f"[i] '{csv_path}' not found. Loading '{found}' instead.")
+            csv_path = found
         else:
             print(f"[!] Error: Dataset '{csv_path}' not found.")
             print("[i] Run 'python scrape_all_books.py' or 'python scrape_books.py' first to generate the dataset.")

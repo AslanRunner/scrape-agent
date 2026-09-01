@@ -23,7 +23,7 @@ if sys.platform == "win32":
 
 # --- Configuration Settings ---
 BASE_URL = "https://books.toscrape.com/"
-CSV_FILENAME = "all_books.csv"
+CSV_FILENAME = os.path.join("output", "all_books.csv")
 REQUEST_DELAY = 0.2  # 200ms polite delay between requests
 MAX_PAGES = None      # Set to integer (e.g. 2 or 3) for quick tests, or None for all 50 pages
 

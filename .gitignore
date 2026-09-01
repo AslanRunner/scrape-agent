@@ -44,7 +44,10 @@ env/
 .DS_Store
 Thumbs.db
 
-# Scraped outputs (preserve sample books.csv if desired, ignore generated temp outputs)
-scraped_data.csv
-test_output.json
+# Scraped outputs
+output/*.csv
+output/*.json
+!output/.gitkeep
+!output/books.csv
+!output/all_books.csv
 *.tmp

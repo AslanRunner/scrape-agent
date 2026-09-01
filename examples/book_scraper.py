@@ -14,7 +14,7 @@ from core.cleaner import clean_html
 from core.exporter import export_data
 
 TARGET_URL = "https://books.toscrape.com/"
-OUTPUT_CSV = "books.csv"
+OUTPUT_CSV = os.path.join(os.path.dirname(__file__), "..", "output", "books.csv")
 
 RATING_MAP = {
     "One": 1,

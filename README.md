@@ -44,29 +44,30 @@ flowchart TD
 
 ```text
 scrape-agent/
-|-- desktop_gui.py         # Native Windows Desktop GUI Application (Tkinter)
+|-- desktop_gui.py         # Modern Neumorphic Desktop GUI Application (CustomTkinter)
 |-- create_shortcut.py     # Custom icon generator & Desktop shortcut installer
-|-- run_desktop_app.bat    # Windows double-click launcher
-|-- ScrapeAgent.bat        # Windows desktop application shortcut
-|-- ScrapeAgent.vbs        # Zero-terminal silent VBS launcher
-|-- run.bat                # Terminal launcher script
-|-- agent.py               # CLI agent interface
-|-- config.py              # Central configuration (User-Agents, timeouts, export formats)
+|-- ScrapeAgent.vbs        # Zero-terminal silent desktop launcher (instant launch)
+|-- ScrapeAgent.bat        # Windows batch desktop application launcher
+|-- run.bat                # Interactive terminal CLI launcher
+|-- agent.py               # Core CLI agent interface
+|-- config.py              # Central configuration (User-Agents, timeouts, output paths)
 |-- assets/                # Application branding & Windows icon assets
 |   |-- scrape_agent.ico   # High-resolution multi-size Windows icon (16x16 to 256x256)
 |   |-- scrape_agent.png   # High-resolution emblem graphics
+|-- output/                # Dedicated folder for extracted datasets
+|   |-- books.csv          # Single-page baseline dataset (20 books)
+|   |-- all_books.csv      # Full catalog dataset (1,000 books)
+|   |-- .gitkeep
 |-- scrape_books.py        # Single-page catalog scraper (Phase 1)
 |-- scrape_all_books.py    # Multi-page pagination & detail enrichment scraper (Phase 2)
 |-- search_books.py        # Interactive search, filter, and analytics REPL (Phase 3)
 |-- requirements.txt       # Project dependencies
-|-- all_books.csv          # Generated catalog dataset
-|-- books.csv              # Single-page baseline dataset
 |-- core/                  # Core extraction framework
 |   |-- __init__.py
 |   |-- fetcher.py         # Resilient HTTP transport layer
-|   |-- browser_fetcher.py # Headless browser transport (Playwright)
+|   |-- browser_fetcher.py # Headless browser transport (Playwright & stealth Chrome)
 |   |-- cleaner.py         # Markup sanitization and JSON-LD retention
-|   |-- extractor.py       # Heuristic pattern discovery and entity parser
+|   |-- extractor.py       # Heuristic pattern discovery, table parser & entity extractor
 |   |-- exporter.py        # Multi-format data serialization
 |-- examples/              # Specialized scrapers and reference implementations
 |   |-- __init__.py
