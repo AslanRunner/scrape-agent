@@ -1,8 +1,8 @@
 """
 ScrapeAgent - Modern Neumorphic Desktop Application.
-Crafted with CustomTkinter featuring soft tactile cards, extruded controls,
-sunken input fields, seamless dark scrollbars, Gotham geometric typography,
-and zero-terminal execution.
+Crafted with CustomTkinter featuring a dual-font system (Gotham Display + Segoe UI Body),
+high-contrast tactile cards, sunken input fields, seamless dark scrollbars,
+zero emojis, and zero-terminal execution.
 """
 import os
 import sys
@@ -27,25 +27,26 @@ from core.extractor import UniversalExtractor
 from core.exporter import export_data
 
 # -----------------------------------------------------------------------------
-# NEUMORPHIC DARK THEME PALETTE
+# NEUMORPHIC DARK PALETTE (OPTIMIZED HIGH CONTRAST)
 # -----------------------------------------------------------------------------
 NEU = {
-    "bg": "#12151b",            # Deep graphite background
-    "card_bg": "#1a1e27",       # Raised surface base
-    "card_border": "#282f3d",   # Light top/left extrusion border
-    "card_shadow": "#0b0d11",   # Deep bottom shadow
-    "inset_bg": "#0f1217",      # Sunken input background
-    "inset_border": "#222733",  # Inner recess stroke
-    "btn_raised": "#222733",    # Tactile raised button
-    "btn_hover": "#2d3444",     # Button hover state
-    "btn_border": "#323a4b",    # Button highlight rim
+    "bg": "#101318",            # Deep obsidian graphite background
+    "card_bg": "#181d26",       # Raised surface base
+    "card_border": "#27303f",   # Subtle extrusion border
+    "card_shadow": "#080a0d",   # Deep bottom shadow
+    "inset_bg": "#0d1015",      # Sunken input background
+    "inset_border": "#222936",  # Inner recess stroke
+    "btn_raised": "#222835",    # Tactile raised button
+    "btn_hover": "#2d3546",     # Button hover state
+    "btn_border": "#364052",    # Button highlight rim
     "accent": "#38bdf8",        # Luminous electric cyan
     "accent_hover": "#0ea5e9",  # Deep cyan hover
     "accent_text": "#041424",   # Contrast text on accent
     "accent_card": "#0284c7",   # Primary CTA button
-    "text": "#f1f5f9",          # Primary crisp white
-    "muted": "#94a3b8",         # Secondary cool gray
-    "dim": "#64748b",           # Subdued tertiary
+    "text": "#ffffff",          # Pure white for crystal clear readability
+    "text_subtle": "#cbd5e1",   # Light slate for easy-to-read secondary text
+    "muted": "#94a3b8",         # Crisp neutral labels
+    "dim": "#64748b",           # Subdued hints
     "success": "#10b981",       # Emerald green dot
     "warning": "#f59e0b",       # Amber warning
     "error": "#ef4444",         # Rose red
@@ -55,23 +56,33 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 
-def detect_gotham_font() -> str:
-    """Return Gotham if installed on system, otherwise Century Gothic (geometric equivalent)."""
+# -----------------------------------------------------------------------------
+# DUAL-FONT TYPOGRAPHY ARCHITECTURE
+# -----------------------------------------------------------------------------
+def resolve_font_pairing():
+    """
+    Establish a balanced 2-font system:
+    1. Display Font (Gotham / Century Gothic) for headers, brand, and prominent badges.
+    2. Body Font (Segoe UI) for data tables, form inputs, status labels, and fine metrics.
+    """
+    display_font = "Century Gothic"
     try:
         import tkinter.font as tkfont
         root = tk.Tk()
         root.withdraw()
-        available = tkfont.families()
+        avail = tkfont.families()
         root.destroy()
-        for cand in ["Gotham", "Gotham Medium", "Gotham Bold", "Gotham-Book", "Century Gothic", "Segoe UI"]:
-            if cand in available:
-                return cand
+        for cand in ["Gotham", "Gotham Medium", "Gotham Bold", "Gotham-Book", "Century Gothic"]:
+            if cand in avail:
+                display_font = cand
+                break
     except Exception:
         pass
-    return "Century Gothic"
+
+    return display_font, "Segoe UI"
 
 
-FONT_FAMILY = detect_gotham_font()
+FONT_DISPLAY, FONT_BODY = resolve_font_pairing()
 
 
 class ScrapeAgentApp(ctk.CTk):
@@ -101,7 +112,7 @@ class ScrapeAgentApp(ctk.CTk):
         self._init_ui()
 
     def _init_ttk_styles(self):
-        """Configure native table to blend into Neumorphic card surface with zero harsh borders."""
+        """Configure native table with high-legibility body font and seamless dark aesthetics."""
         style = ttk.Style()
         style.theme_use("clam")
 
@@ -111,7 +122,7 @@ class ScrapeAgentApp(ctk.CTk):
             foreground=NEU["text"],
             fieldbackground=NEU["card_bg"],
             rowheight=32,
-            font=(FONT_FAMILY, 10),
+            font=(FONT_BODY, 10),
             borderwidth=0,
             highlightthickness=0,
         )
@@ -119,7 +130,7 @@ class ScrapeAgentApp(ctk.CTk):
             "Treeview.Heading",
             background=NEU["btn_raised"],
             foreground=NEU["text"],
-            font=(FONT_FAMILY, 9, "bold"),
+            font=(FONT_BODY, 9, "bold"),
             relief="flat",
             padding=8,
             borderwidth=0,
@@ -143,23 +154,24 @@ class ScrapeAgentApp(ctk.CTk):
         self.header_card.pack(fill="x", padx=20, pady=(16, 12))
         self.header_card.pack_propagate(False)
 
-        # Brand Title Left
+        # Brand Title Left (Display Font)
         title_box = ctk.CTkFrame(self.header_card, fg_color="transparent")
         title_box.pack(side="left", padx=20, pady=12)
 
         self.lbl_title = ctk.CTkLabel(
             title_box,
-            text="⚡ ScrapeAgent",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=20, weight="bold"),
+            text="ScrapeAgent",
+            font=ctk.CTkFont(family=FONT_DISPLAY, size=21, weight="bold"),
             text_color=NEU["accent"],
         )
         self.lbl_title.pack(anchor="w")
 
+        # Subtitle (Body Font, High Legibility)
         self.lbl_sub = ctk.CTkLabel(
             title_box,
             text="Autonomous Web Scraping & Structured Extraction Desktop",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
-            text_color=NEU["muted"],
+            font=ctk.CTkFont(family=FONT_BODY, size=11),
+            text_color=NEU["text_subtle"],
         )
         self.lbl_sub.pack(anchor="w")
 
@@ -181,7 +193,7 @@ class ScrapeAgentApp(ctk.CTk):
         self.status_dot = ctk.CTkLabel(
             self.status_pill,
             text="●",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            font=ctk.CTkFont(family=FONT_BODY, size=11, weight="bold"),
             text_color=NEU["success"],
         )
         self.status_dot.pack(side="left", padx=(10, 4), pady=4)
@@ -189,7 +201,7 @@ class ScrapeAgentApp(ctk.CTk):
         self.status_text = ctk.CTkLabel(
             self.status_pill,
             text="READY",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold"),
+            font=ctk.CTkFont(family=FONT_DISPLAY, size=10, weight="bold"),
             text_color=NEU["text"],
         )
         self.status_text.pack(side="left", padx=(0, 12), pady=4)
@@ -197,8 +209,8 @@ class ScrapeAgentApp(ctk.CTk):
         # Open Output Folder Button (Tactile Raised)
         self.btn_folder = ctk.CTkButton(
             hdr_right,
-            text="📁 Output Folder",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            text="Output Folder",
+            font=ctk.CTkFont(family=FONT_BODY, size=11, weight="bold"),
             fg_color=NEU["btn_raised"],
             hover_color=NEU["btn_hover"],
             border_color=NEU["btn_border"],
@@ -227,15 +239,15 @@ class ScrapeAgentApp(ctk.CTk):
         lbl_url = ctk.CTkLabel(
             url_row,
             text="TARGET URL",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+            font=ctk.CTkFont(family=FONT_DISPLAY, size=11, weight="bold"),
             text_color=NEU["accent"],
         )
         lbl_url.pack(side="left", padx=(0, 14))
 
-        # Sunken / Inset URL Input Field
+        # Sunken / Inset URL Input Field (Body Font for Clean Reading)
         self.url_entry = ctk.CTkEntry(
             url_row,
-            font=ctk.CTkFont(family=FONT_FAMILY, size=13),
+            font=ctk.CTkFont(family=FONT_BODY, size=12),
             fg_color=NEU["inset_bg"],
             border_color=NEU["inset_border"],
             border_width=1,
@@ -252,8 +264,8 @@ class ScrapeAgentApp(ctk.CTk):
         # Glowing Tactile Action Button
         self.btn_scrape = ctk.CTkButton(
             url_row,
-            text="🚀 SCRAPE DATA",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold"),
+            text="SCRAPE DATA",
+            font=ctk.CTkFont(family=FONT_DISPLAY, size=12, weight="bold"),
             fg_color=NEU["accent_card"],
             hover_color=NEU["accent_hover"],
             border_color=NEU["accent"],
@@ -261,7 +273,7 @@ class ScrapeAgentApp(ctk.CTk):
             text_color="#ffffff",
             corner_radius=12,
             height=42,
-            width=160,
+            width=150,
             command=self.start_scraping,
         )
         self.btn_scrape.pack(side="right")
@@ -273,8 +285,8 @@ class ScrapeAgentApp(ctk.CTk):
         lbl_engine = ctk.CTkLabel(
             opts_row,
             text="Engine:",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
-            text_color=NEU["muted"],
+            font=ctk.CTkFont(family=FONT_BODY, size=11, weight="bold"),
+            text_color=NEU["text_subtle"],
         )
         lbl_engine.pack(side="left", padx=(0, 8))
 
@@ -282,7 +294,7 @@ class ScrapeAgentApp(ctk.CTk):
         self.engine_segmented = ctk.CTkSegmentedButton(
             opts_row,
             values=["HTTP Client (Fast)", "Headless Browser (Playwright / Dynamic JS)"],
-            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            font=ctk.CTkFont(family=FONT_BODY, size=11),
             fg_color=NEU["inset_bg"],
             selected_color=NEU["accent_card"],
             selected_hover_color=NEU["accent_hover"],
@@ -298,8 +310,8 @@ class ScrapeAgentApp(ctk.CTk):
         lbl_presets = ctk.CTkLabel(
             opts_row,
             text="Quick Presets:",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
-            text_color=NEU["muted"],
+            font=ctk.CTkFont(family=FONT_BODY, size=11, weight="bold"),
+            text_color=NEU["text_subtle"],
         )
         lbl_presets.pack(side="left", padx=(0, 8))
 
@@ -311,7 +323,7 @@ class ScrapeAgentApp(ctk.CTk):
                 "Quotes to Scrape",
                 "Hacker News",
             ],
-            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            font=ctk.CTkFont(family=FONT_BODY, size=11),
             fg_color=NEU["btn_raised"],
             button_color=NEU["btn_hover"],
             button_hover_color=NEU["card_border"],
@@ -344,20 +356,20 @@ class ScrapeAgentApp(ctk.CTk):
         self.lbl_table_title = ctk.CTkLabel(
             ws_hdr,
             text="EXTRACTED DATASETS (0 RECORDS)",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            font=ctk.CTkFont(family=FONT_DISPLAY, size=12, weight="bold"),
             text_color=NEU["accent"],
         )
         self.lbl_table_title.pack(side="left")
 
-        # Inset Filter Entry
+        # Inset Filter Entry (Body Font)
         search_box = ctk.CTkFrame(ws_hdr, fg_color="transparent")
         search_box.pack(side="right")
 
         self.filter_entry = ctk.CTkEntry(
             search_box,
-            placeholder_text="🔍 Filter records...",
+            placeholder_text="Filter records...",
             placeholder_text_color=NEU["dim"],
-            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            font=ctk.CTkFont(family=FONT_BODY, size=11),
             fg_color=NEU["inset_bg"],
             border_color=NEU["inset_border"],
             border_width=1,
@@ -369,7 +381,7 @@ class ScrapeAgentApp(ctk.CTk):
         self.filter_entry.pack(side="left")
         self.filter_entry.bind("<KeyRelease>", lambda e: self.filter_table())
 
-        # Table Container with Dark Inset Styling (No white lines or bars)
+        # Table Container with Dark Inset Styling (Zero white lines or bars)
         table_container = ctk.CTkFrame(
             self.workspace_card,
             fg_color=NEU["inset_bg"],
@@ -426,9 +438,9 @@ class ScrapeAgentApp(ctk.CTk):
 
         self.status_msg = ctk.CTkLabel(
             self.footer_card,
-            text="Ready. Paste any web URL and click 'Scrape Data'.",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
-            text_color=NEU["muted"],
+            text="Ready. Paste any web URL and click 'SCRAPE DATA'.",
+            font=ctk.CTkFont(family=FONT_BODY, size=11),
+            text_color=NEU["text_subtle"],
         )
         self.status_msg.pack(side="left", padx=20, pady=10)
 
@@ -449,8 +461,8 @@ class ScrapeAgentApp(ctk.CTk):
 
         self.btn_csv = ctk.CTkButton(
             actions_box,
-            text="💾 Save CSV",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+            text="Save CSV",
+            font=ctk.CTkFont(family=FONT_BODY, size=11, weight="bold"),
             fg_color=NEU["btn_raised"],
             hover_color=NEU["btn_hover"],
             border_color=NEU["btn_border"],
@@ -458,15 +470,15 @@ class ScrapeAgentApp(ctk.CTk):
             text_color=NEU["text"],
             corner_radius=10,
             height=30,
-            width=100,
+            width=90,
             command=self.save_csv,
         )
         self.btn_csv.pack(side="left", padx=(0, 8))
 
         self.btn_json = ctk.CTkButton(
             actions_box,
-            text="💾 Save JSON",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            text="Save JSON",
+            font=ctk.CTkFont(family=FONT_BODY, size=11),
             fg_color=NEU["btn_raised"],
             hover_color=NEU["btn_hover"],
             border_color=NEU["btn_border"],
@@ -474,23 +486,23 @@ class ScrapeAgentApp(ctk.CTk):
             text_color=NEU["text"],
             corner_radius=10,
             height=30,
-            width=100,
+            width=90,
             command=self.save_json,
         )
         self.btn_json.pack(side="left", padx=(0, 8))
 
         self.btn_clear = ctk.CTkButton(
             actions_box,
-            text="✕ Clear",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            text="Clear",
+            font=ctk.CTkFont(family=FONT_BODY, size=11),
             fg_color=NEU["btn_raised"],
             hover_color=NEU["btn_hover"],
             border_color=NEU["btn_border"],
             border_width=1,
-            text_color=NEU["dim"],
+            text_color=NEU["muted"],
             corner_radius=10,
             height=30,
-            width=70,
+            width=65,
             command=self.clear_table,
         )
         self.btn_clear.pack(side="left")
@@ -536,9 +548,9 @@ class ScrapeAgentApp(ctk.CTk):
         use_browser = "Headless Browser" in self.engine_segmented.get()
 
         self.is_scraping = True
-        self.btn_scrape.configure(state="disabled", text="⏳ EXTRACTING...")
+        self.btn_scrape.configure(state="disabled", text="EXTRACTING...")
         self.status_dot.configure(text_color=NEU["warning"])
-        self.status_text.configure(text="EXTRACTING")
+        self.status_text.configure(text="BUSY")
         self.status_msg.configure(text=f"Connecting to {url}...")
 
         self.progress_bar.pack(side="left", padx=16)
@@ -590,7 +602,7 @@ class ScrapeAgentApp(ctk.CTk):
         """Render records on UI thread."""
         self.current_records = records
         self.render_table(self.current_records)
-        self.status_msg.configure(text=f"✓ Successfully extracted {len(records)} records in {elapsed:.2f}s. Saved to '{filename}'.")
+        self.status_msg.configure(text=f"Successfully extracted {len(records)} records in {elapsed:.2f}s. Saved to '{filename}'.")
 
     def _on_scrape_empty(self, url: str):
         """Handle no records."""
@@ -606,7 +618,7 @@ class ScrapeAgentApp(ctk.CTk):
         """Restore buttons and indicators."""
         self.progress_bar.stop()
         self.progress_bar.pack_forget()
-        self.btn_scrape.configure(state="normal", text="🚀 SCRAPE DATA")
+        self.btn_scrape.configure(state="normal", text="SCRAPE DATA")
         self.status_dot.configure(text_color=NEU["success"])
         self.status_text.configure(text="READY")
 
@@ -628,7 +640,7 @@ class ScrapeAgentApp(ctk.CTk):
         cols = ["#"] + all_keys
         self.active_cols = cols
 
-        # Configure dynamic column headers and proportions
+        # Configure dynamic column headers and proportions using Body Font
         self.tree.config(columns=cols)
         for col in cols:
             self.tree.heading(col, text=col)
