@@ -111,6 +111,20 @@ python scrape_all_books.py
 python scrape_all_books.py --pages 3
 ```
 
+#### E. Interactive Search & Analysis REPL (Day 3)
+Query, filter, sort, and analyze scraped catalog datasets in real time:
+```bash
+python search_books.py
+```
+**Supported REPL Commands:**
+- `stats` - Summary statistics (average price, price range, rating breakdown, top categories)
+- `search <keyword>` - Case-insensitive keyword search across title, category, and description
+- `filter category=Mystery min_price=30 rating>=4` - Multi-criteria boolean mask filtering
+- `sort price desc` - Sort current view by column
+- `save results.csv` - Export active query view to a CSV file
+- `reset` - Clear all filters and return to full catalog
+- `help` / `quit` - Command reference or exit
+
 ---
 
 ## 📊 Sample Output
@@ -153,6 +167,7 @@ Running ScrapeAgent on a catalog produces clean structured data:
 - [x] CSV & JSON data exporter
 - [x] Multi-page automated pagination crawling (Day 2)
 - [x] Two-level scraping with detail page enrichment (UPC, stock count, categories)
+- [x] Interactive query REPL & pandas search engine (Day 3)
 - [ ] LLM Tool Calling integration (Gemini / OpenAI structured output)
 - [ ] Dynamic JavaScript rendering support via Playwright
 - [ ] Proxy rotation & polite rate-limiting pool
