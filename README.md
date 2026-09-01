@@ -1,76 +1,80 @@
-# 🕷️ ScrapeAgent
+# ScrapeAgent
 
-<p align="center">
-  <strong>An Intelligent, Autonomous Web Scraping & Structured Data Extraction Agent</strong>
-</p>
+Autonomous Web Scraping, Pattern Discovery, and Structured Data Extraction Engine.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python 3.10+">
-  <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License MIT">
-  <img src="https://img.shields.io/badge/status-active%20development-orange.svg" alt="Status">
-</p>
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code Style](https://img.shields.io/badge/code%20style-pep8-green.svg)](https://peps.python.org/pep-0008/)
 
 ---
 
-**ScrapeAgent** is a universal web scraping and extraction agent designed to parse web content intelligently. Instead of requiring brittle, hardcoded CSS selectors for every website, ScrapeAgent inspects the DOM, sanitizes noisy markup, identifies repeating patterns (products, listings, articles, cards), and extracts structured data on the fly.
+## Overview
+
+**ScrapeAgent** is a modular web scraping and extraction engine built in Python. Unlike conventional scrapers that rely on fragile, site-specific CSS selectors, ScrapeAgent employs structural heuristics to sanitize noisy HTML, identify repeating entity containers (e.g., product listings, articles, cards), and extract structured datasets dynamically.
+
+The system also includes an end-to-end data pipeline: multi-page pagination with rate limiting, two-level detail page enrichment, and an in-memory interactive query REPL backed by pandas.
 
 ---
 
-## ✨ Features
+## Key Capabilities
 
-- 🌐 **Universal URL Extraction**: Automatically discovers repeating content blocks (catalogs, blog feeds, e-commerce listings) across diverse web pages.
-- 🧹 **Smart DOM Sanitization**: Removes `<script>`, `<style>`, `<noscript>`, SVGs, and comments to drastically reduce noise.
-- 🛡️ **Polite & Resilient HTTP Engine**: Configurable polite `User-Agent` headers, automated timeout protection, and intelligent character encoding detection (preserving symbols like `£`, `$`, `€`, `₺`).
-- 📂 **Multi-Format Export**: Clean, automated export to **CSV** or **JSON** formats with proper headers and data types.
-- 🧠 **Agent-First Architecture**: Built from the ground up to integrate with AI tool calling (Gemini, OpenAI, Ollama, LangChain) for schema-on-demand scraping.
-- 🖥️ **Interactive & Headless CLI**: Run interactively with an intuitive terminal interface or headlessly using command-line arguments.
+- **Universal Pattern Discovery**: Automatically detects recurring DOM clusters and repeating entities across arbitrary websites without manual selector mapping.
+- **Noise Filtration & DOM Sanitization**: Removes non-semantic tags (`script`, `style`, `noscript`, `svg`, `iframe`) while preserving structured metadata (`application/ld+json`, OpenGraph).
+- **Resilient HTTP Client**: Enforces polite `User-Agent` headers, automatic character encoding detection (handling currency symbols and multi-byte characters), and timeout protection.
+- **Bot & Challenge Detection**: Identifies automated challenge walls (e.g., Cloudflare, reCAPTCHA) and produces actionable diagnostics.
+- **Multi-Level Extraction Pipeline**: Crawls catalog listing pages and recursively enriches entities by fetching detail pages for deep attributes.
+- **Interactive Query Engine**: Provides an in-terminal REPL to search, filter with boolean masks, sort, compute aggregate statistics, and export sub-views to CSV.
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```mermaid
 flowchart TD
-    A["Target URL / Prompt"] --> B["core.fetcher\n(Polite Headers, Charset Detection)"]
-    B --> C["core.cleaner\n(Noise Removal & DOM Optimization)"]
-    C --> D["core.extractor\n(Universal Pattern & Heuristic Discovery)"]
-    D --> E["core.exporter\n(Clean CSV / JSON Generation)"]
-    D -.-> F["AI Agent / LLM Core\n(Optional Schema Reasoning)"]
+    A["Target URL / Query Input"] --> B["core.fetcher (HTTP Client & Charset Resolution)"]
+    B --> C["core.cleaner (DOM Sanitization & Noise Removal)"]
+    C --> D["core.extractor (Universal Clustering & Schema Parsing)"]
+    D --> E["core.exporter (CSV / JSON Serialization)"]
+    D --> F["search_books.py (Interactive Query Engine & Pandas REPL)"]
 ```
 
 ---
 
-## 📁 Project Structure
+## Directory Structure
 
 ```text
 scrape-agent/
-│
-├── agent.py               # Main CLI interface (Interactive & Flag-driven)
-├── config.py              # Global configurations (User-Agents, timeouts, formats)
-│
-├── core/                  # Core Agent Engine
-│   ├── __init__.py
-│   ├── fetcher.py         # HTTP fetching with charset/error resilience
-│   ├── cleaner.py         # HTML noise stripping & semantic simplification
-│   ├── extractor.py       # Universal pattern detector & heuristic extractor
-│   └── exporter.py        # CSV & JSON export utilities
-│
-├── examples/              # Built-in scraper presets & challenges
-│   ├── __init__.py
-│   └── book_scraper.py    # Catalog scraper for books.toscrape.com
-│
-├── requirements.txt       # Project dependencies
-├── .gitignore             # Standard Python git exclusions
-└── README.md              # Project documentation
+|-- agent.py               # Unified CLI interface (Interactive & flag-driven modes)
+|-- config.py              # Central configuration (User-Agents, timeouts, export formats)
+|-- scrape_books.py        # Single-page catalog scraper (Phase 1)
+|-- scrape_all_books.py    # Multi-page pagination & detail enrichment scraper (Phase 2)
+|-- search_books.py        # Interactive search, filter, and analytics REPL (Phase 3)
+|-- requirements.txt       # Project dependencies
+|-- all_books.csv          # Generated catalog dataset
+|-- books.csv              # Single-page baseline dataset
+|-- core/                  # Core extraction framework
+|   |-- __init__.py
+|   |-- fetcher.py         # Resilient HTTP transport layer
+|   |-- cleaner.py         # Markup sanitization and JSON-LD retention
+|   |-- extractor.py       # Heuristic pattern discovery and entity parser
+|   |-- exporter.py        # Multi-format data serialization
+|-- examples/              # Specialized scrapers and reference implementations
+|   |-- __init__.py
+|   |-- book_scraper.py
 ```
 
 ---
 
-## 🚀 Quickstart
+## Installation
 
-### 1. Installation
+### Prerequisites
 
-Clone the repository and install requirements:
+- Python 3.10 or higher
+- pip package manager
+
+### Setup
+
+Clone the repository and install the dependencies:
 
 ```bash
 git clone https://github.com/AslanRunner/scrape-agent.git
@@ -78,98 +82,108 @@ cd scrape-agent
 pip install -r requirements.txt
 ```
 
-### 2. Usage Modes
+---
 
-#### A. Interactive Mode
-Simply run the agent without flags to enter the interactive terminal menu:
+## Usage Guide
+
+### 1. Unified Agent CLI
+
+#### Interactive Mode
+
+Launch the interactive prompt to enter target URLs or select built-in routines:
+
 ```bash
 python agent.py
 ```
 
-#### B. Direct URL Scraping
-Scrape any web page and export to CSV or JSON:
-```bash
-# Scrape to CSV
-python agent.py --url "https://books.toscrape.com/" --output "books.csv"
+#### Direct URL Extraction
 
-# Scrape to JSON
-python agent.py --url "https://books.toscrape.com/" --output "books.json"
+Scrape any arbitrary URL directly from the terminal:
+
+```bash
+# Export extracted items to CSV
+python agent.py --url "https://books.toscrape.com/" --output "scraped_data.csv"
+
+# Export extracted items to JSON
+python agent.py --url "https://books.toscrape.com/" --output "scraped_data.json"
 ```
 
-#### C. Run the Single-Page Scraper (Day 1)
+---
+
+### 2. Catalog Scraping Pipeline
+
+#### Phase 1: Single-Page Extraction
+
+Fetches the homepage catalog (20 items), parses title attributes, normalized prices, ratings, and stock status:
+
 ```bash
 python scrape_books.py
 ```
 
-#### D. Run the Full Multi-Page Catalog Scraper (Day 2)
-Scrapes all 50 pages (1,000 books) with automated pagination and detail-page enrichment (UPC, stock count, category, full description):
+#### Phase 2: Full Catalog Pagination & Detail Enrichment
+
+Traverses all 50 pagination pages (1,000 items) and performs two-level scraping to retrieve detail attributes (UPC, exact stock count, category, full description):
+
 ```bash
-# Full catalog (all 50 pages, 1,000 books)
+# Scrape the entire catalog (50 pages, 1,000 books)
 python scrape_all_books.py
 
-# Quick test mode (e.g. scrape first 3 pages)
+# Quick test run limited to N pages
 python scrape_all_books.py --pages 3
 ```
 
-#### E. Interactive Search & Analysis REPL (Day 3)
-Query, filter, sort, and analyze scraped catalog datasets in real time:
+---
+
+### 3. Interactive Search & Analysis REPL
+
+Query and analyze the generated dataset using pandas-backed operations:
+
 ```bash
 python search_books.py
 ```
-**Supported REPL Commands:**
-- `stats` - Summary statistics (average price, price range, rating breakdown, top categories)
-- `search <keyword>` - Case-insensitive keyword search across title, category, and description
-- `filter category=Mystery min_price=30 rating>=4` - Multi-criteria boolean mask filtering
-- `sort price desc` - Sort current view by column
-- `save results.csv` - Export active query view to a CSV file
-- `reset` - Clear all filters and return to full catalog
-- `help` / `quit` - Command reference or exit
+
+#### Supported REPL Commands
+
+| Command | Syntax Example | Description |
+| :--- | :--- | :--- |
+| `stats` | `stats` | Displays catalog statistics (record count, category count, average price, price range, rating breakdown). |
+| `search` | `search mystery` | Performs a case-insensitive substring search across title, description, and category. |
+| `filter` | `filter category=Mystery min_price=30 rating>=4` | Applies combined boolean masks on category, price range, and rating. |
+| `sort` | `sort price desc` | Sorts the current filtered view by column (`asc` or `desc`) without mutating state. |
+| `save` | `save filtered_results.csv` | Exports the current query view to a CSV file. |
+| `reset` | `reset` | Clears all active filters and restores the full catalog view. |
+| `help` | `help` | Prints the available command reference. |
+| `quit` | `quit` | Terminates the REPL session. |
 
 ---
 
-## 📊 Sample Output
+## Technical Specifications
 
-Running ScrapeAgent on a catalog produces clean structured data:
-
-```text
-   _____                               ___                    _   
-  / ___/______________ _____  ___     /   | ____ ____  ____  / /_ 
-  \__ \/ ___/ ___/ __ `/ __ \/ _ \   / /| |/ __ `/ _ \/ __ \/ __/ 
- ___/ / /__/ /  / /_/ / /_/ /  __/  / ___ / /_/ /  __/ / / / /_   
-/____/\___/_/   \__,_/ .___/\___/  /_/  |_\__, /\___/_/ /_/\__/   
-                    /_/                  /____/                   
-          Intelligent & Autonomous Web Scraping Agent
-
-[+] Agent navigating to: https://books.toscrape.com/
-[✓] Status 200 OK (50 KB received)
-[+] Sanitizing HTML & stripping noise...
-[+] Universal Extractor analyzing DOM structure...
-[✓] Discovered 20 structured items!
-
---- Previewing Extracted Records ---
-   1. A Light in the Attic                                 £51.77
-      Link: https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html
-   2. Tipping the Velvet                                   £53.74
-      Link: https://books.toscrape.com/catalogue/tipping-the-velvet_999/index.html
-  ... and 18 more items.
-
-[✓] Results successfully exported to: scraped_data.csv
-```
+| Component | Implementation |
+| :--- | :--- |
+| **HTTP Transport** | `requests` with custom headers, configurable timeout, and explicit encoding fallback |
+| **DOM Parsing** | `BeautifulSoup4` (`html.parser`) |
+| **Data Engine** | `pandas` (Vectorized boolean indexing, aggregation, series transformation) |
+| **Serialization** | Standard library `csv` (`DictWriter`, UTF-8, strict newline handling) and `json` |
+| **Rate Limiting** | Configurable inter-request delay (`time.sleep`) to prevent IP throttling |
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
-- [x] Polite HTTP fetcher with auto-detected charset encoding
-- [x] HTML noise stripping and DOM cleaner
-- [x] Universal repeating item discovery heuristic
-- [x] Anti-bot and challenge page detection (Cloudflare / reCAPTCHA)
-- [x] CSV & JSON data exporter
-- [x] Multi-page automated pagination crawling (Day 2)
-- [x] Two-level scraping with detail page enrichment (UPC, stock count, categories)
-- [x] Interactive query REPL & pandas search engine (Day 3)
-- [ ] LLM Tool Calling integration (Gemini / OpenAI structured output)
-- [ ] Dynamic JavaScript rendering support via Playwright
-- [ ] Proxy rotation & polite rate-limiting pool
+- [x] Polite HTTP client with automatic charset detection
+- [x] Markup noise suppression and JSON-LD preservation
+- [x] Heuristic repeating entity detection
+- [x] Anti-bot and challenge screen diagnostics
+- [x] Multi-page automated pagination crawling
+- [x] Two-level scraping with detail page attribute enrichment
+- [x] In-terminal interactive analysis REPL
+- [ ] Headless browser integration (Playwright) for client-side rendered (SPA) sites
+- [ ] Automated proxy rotation and request concurrency pool
+- [ ] LLM function-calling integration for natural language schema extraction
 
+---
 
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
