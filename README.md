@@ -86,7 +86,23 @@ pip install -r requirements.txt
 
 ## Usage Guide
 
-### 1. Unified Agent CLI
+### 1. Modern Web Application (ScrapeAgent Studio)
+
+Launch the full interactive web application to input target URLs directly, select extraction engines, inspect live datasets, and export files:
+
+```bash
+streamlit run app.py
+```
+
+**Application Capabilities:**
+- **Universal URL Scraping**: Enter any URL directly, toggle between HTTP Engine and Headless Browser (Playwright), and preview extracted items in real time.
+- **Dataset Explorer & Analytics**: Search keywords across titles and descriptions, filter by category/price/rating sliders, and calculate summary statistics.
+- **One-Click Export**: Download any extracted or filtered view directly as CSV or JSON.
+- **Catalog Scraping Pipeline**: Launch multi-page crawlers with interactive progress tracking.
+
+---
+
+### 2. Unified Agent CLI
 
 #### Interactive Mode
 
