@@ -29,20 +29,33 @@ def fetch_page_browser(url: str, timeout_ms: int = 30000, headless: bool = True)
         )
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(
-            headless=headless,
-            args=[
-                "--disable-blink-features=AutomationControlled",
-                "--no-sandbox",
-                "--disable-infobars",
-            ],
-        )
+        launch_args = [
+            "--disable-blink-features=AutomationControlled",
+            "--no-sandbox",
+            "--disable-infobars",
+            "--disable-dev-shm-usage",
+        ]
+
+        # Prefer installed Google Chrome for higher trust score, fallback to bundled Chromium
+        try:
+            browser = p.chromium.launch(
+                channel="chrome",
+                headless=headless,
+                args=launch_args,
+                ignore_default_args=["--enable-automation"],
+            )
+        except Exception:
+            browser = p.chromium.launch(
+                headless=headless,
+                args=launch_args,
+                ignore_default_args=["--enable-automation"],
+            )
 
         context = browser.new_context(
             user_agent=(
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                 "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/124.0.0.0 Safari/537.36"
+                "Chrome/128.0.0.0 Safari/537.36"
             ),
             viewport={"width": 1920, "height": 1080},
             locale="tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
@@ -50,10 +63,13 @@ def fetch_page_browser(url: str, timeout_ms: int = 30000, headless: bool = True)
 
         page = context.new_page()
 
-        # Evade basic automation detection
-        page.add_init_script(
-            "Object.defineProperty(navigator, 'webdriver', {get: () => undefined});"
-        )
+        # Stealth evasion scripts
+        page.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+            window.navigator.chrome = { runtime: {} };
+            Object.defineProperty(navigator, 'languages', {get: () => ['tr-TR', 'tr', 'en-US', 'en']});
+            Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
+        """)
 
         try:
             page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
