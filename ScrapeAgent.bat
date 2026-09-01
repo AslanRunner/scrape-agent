@@ -1,5 +1,3 @@
 @echo off
-title ScrapeAgent Desktop
-cd /d "%~dp0"
-python desktop_gui.py
-if errorlevel 1 pause
+start "" pythonw "%~dp0desktop_gui.py"
+exit

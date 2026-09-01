@@ -93,19 +93,18 @@ python -m pip install -r requirements.txt
 
 ### 1. Native Desktop GUI Application
 
-Run the native desktop application by double-clicking **`run_desktop_app.bat`** (or **`ScrapeAgent.bat`**) in Windows Explorer, or execute:
+Launch the desktop application with zero console windows by double-clicking **`ScrapeAgent.vbs`** (or **`run_desktop_app.bat`** / **`ScrapeAgent.bat`**), or execute:
 
 ```bash
-python desktop_gui.py
+pythonw desktop_gui.py
 ```
 
 **Desktop GUI Features:**
-- **URL Extraction Bar**: Paste any target URL directly, select between the fast HTTP client or Playwright Chromium engine, and trigger extraction with one click.
-- **Interactive Treeview Table**: View extracted records in a sortable, scrollable table with an instant live search filter.
-- **Terminal Activity Log**: Real-time console monitor displaying status codes, response sizes, noise sanitization, and pattern discovery.
-- **Direct Exports**: Save results directly to CSV or JSON with native Windows save dialogs.
-- **One-Click Folder Access**: Open the local output folder in Windows File Explorer.
-- **Batch Scraper**: Trigger multi-page crawlers in background threads without freezing the user interface.
+- **Zero-Terminal Window**: Opens instantly as a pure native Windows window without any CMD terminal flash.
+- **URL Extraction Bar**: Input any target web address directly, toggle between HTTP Engine and Playwright Chromium, and extract with one click.
+- **Full-Window Interactive Table**: View and explore extracted records in a responsive, scrollable table with real-time text filtering.
+- **One-Click Exports**: Save extracted datasets directly to CSV or JSON with native Windows save dialogs.
+- **One-Click Folder Access**: Open the output directory in Windows File Explorer.
 
 ---
 
