@@ -1,91 +1,91 @@
 # ScrapeAgent
 
-Web sitelerinden otomatik olarak yapısal veri (tablolar, kartlar, listeler vb.) çıkaran ve CSV/JSON formatında dışa aktaran masaüstü ve komut satırı aracı.
+A lightweight desktop and command-line tool to extract structured data (tables, cards, listings) from any webpage into CSV or JSON format.
 
 ---
 
-## Özellikler
+## Features
 
-- **Şablonsuz Veri Çıkarma:** Manuel CSS veya XPath seçicisi girmeden sayfadaki tekrarlayan yapıları (ürünler, haberler, listeler ve tablolar) otomatik tespit eder.
-- **İki Farklı Çalışma Motoru:**
-  - **Hızlı HTTP:** Standart HTML sayfaları için hafif ve hızlı istek motoru.
-  - **Playwright (Chromium):** JavaScript ile sonradan yüklenen dinamik sayfalar (SPA) için tam tarayıcı render desteği.
-- **Karanlık ve Aydınlık Tema:** Şık mavi ve siyah (Blue & Black) renk paleti ve tek tıkla mod geçişi.
-- **Canlı Tablo ve Arama:** Çekilen verileri arayüzdeki tabloda görüntüleme ve anlık arama/filtreleme.
-- **Dışa Aktarma:** Verileri tek tıkla `.csv` veya `.json` olarak kaydetme.
-- **CLI & GUI:** İster grafik arayüzden, ister terminalden tek komutla kullanım.
+- **Automatic Pattern Extraction:** Automatically detects repeating structures (products, articles, lists, tables) without requiring manual CSS selectors or XPath rules.
+- **Dual Scraping Engines:**
+  - **HTTP Engine:** Fast, lightweight requests engine for standard static HTML pages.
+  - **Browser Engine (Playwright):** Full Chromium rendering for dynamic, client-side JavaScript (SPA) pages.
+- **Dark & Light Themes:** Modern Blue & Black interface with a single-click mode toggle.
+- **Live Table & Search:** View extracted records in a responsive table with instant search and filtering.
+- **One-Click Export:** Export data directly to `.csv` or `.json`.
+- **CLI & GUI:** Run via an intuitive desktop GUI or through direct command-line commands.
 
 ---
 
-## Kurulum
+## Installation
 
-1. Depoyu klonlayın ve klasöre girin:
+1. Clone the repository:
 ```bash
 git clone https://github.com/AslanRunner/scrape-agent.git
 cd scrape-agent
 ```
 
-2. Gerekli kütüphaneleri yükleyin:
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. *(Opsiyonel - Dinamik JavaScript sitelerini tarayıcı ile kazımak için)*:
+3. *(Optional - for dynamic JavaScript pages)*:
 ```bash
 playwright install chromium
 ```
 
 ---
 
-## Kullanım
+## Usage
 
-### 1. Masaüstü Grafik Arayüzü (GUI)
-Uygulamayı başlatmak için `ScrapeAgent.bat` dosyasına çift tıklayabilir veya terminalden çalıştırabilirsiniz:
+### 1. Desktop GUI
+Run `ScrapeAgent.bat` (or execute via terminal):
 
 ```bash
 python desktop_gui.py
 ```
 
-### 2. Komut Satırı (CLI)
+### 2. Command-Line Interface (CLI)
 
-**Etkileşimli Menü:**
+**Interactive Menu:**
 ```bash
 python agent.py
 ```
 
-**Doğrudan Komutla Kazıma:**
+**Direct Command Execution:**
 ```bash
-# Standart HTTP ile CSV olarak kaydetme
-python agent.py --url "https://ornek-site.com" --output "veriler.csv"
+# Scrape static page using HTTP engine and export to CSV
+python agent.py --url "https://quotes.toscrape.com/" --output "quotes.csv"
 
-# Dinamik JavaScript siteleri için tarayıcı motoruyla kazıma
-python agent.py --url "https://ornek-site.com" --browser --output "veriler.json"
+# Scrape dynamic JavaScript page using headless browser
+python agent.py --url "https://example.com" --browser --output "data.json"
 ```
 
 ---
 
-## Proje Yapısı
+## Project Structure
 
 ```text
 scrape-agent/
-├── desktop_gui.py      # CustomTkinter tabanlı masaüstü grafik arayüzü
-├── agent.py            # Komut satırı arayüzü ve terminal menüsü
-├── config.py           # Zaman aşımı ve çıktı klasörü ayarları
-├── ScrapeAgent.bat     # Windows başlatıcı
-├── run.bat             # Terminal başlatıcı
-├── requirements.txt    # Python bağımlılıkları
-├── assets/             # İkon ve görsel dosyaları
-├── output/             # Çıkarılan verilerin kaydedildiği klasör
-└── core/               # Kazıma motoru çekirdek modülleri
-    ├── fetcher.py      # HTTP istek modülü (requests)
-    ├── browser_fetcher.py # Headless Chromium modülü (Playwright)
-    ├── cleaner.py      # HTML temizleme ve ayrıştırma
-    ├── extractor.py    # Otomatik yapısal veri çıkarma motoru
-    └── exporter.py     # CSV ve JSON dönüştürücü
+├── desktop_gui.py      # Desktop GUI application (CustomTkinter)
+├── agent.py            # Command-line interface and interactive menu
+├── config.py           # Configuration settings
+├── ScrapeAgent.bat     # Windows desktop launcher
+├── run.bat             # Terminal launcher
+├── requirements.txt    # Python dependencies
+├── assets/             # Icons and visual assets
+├── output/             # Extracted datasets directory
+└── core/               # Core extraction modules
+    ├── fetcher.py      # HTTP request client
+    ├── browser_fetcher.py # Headless Chromium client (Playwright)
+    ├── cleaner.py      # HTML cleanup and sanitization
+    ├── extractor.py    # Pattern discovery and data extraction engine
+    └── exporter.py     # CSV and JSON exporter
 ```
 
 ---
 
-## Lisans
+## License
 
-Bu proje [MIT](LICENSE) lisansı ile lisanslanmıştır.
+This project is licensed under the [MIT](LICENSE) License.

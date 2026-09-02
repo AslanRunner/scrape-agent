@@ -1,4 +1,4 @@
-"""ScrapeAgent masaüstü arayüzü."""
+"""ScrapeAgent desktop GUI."""
 import os
 import sys
 import threading
@@ -21,56 +21,56 @@ from config import DEFAULT_OUTPUT_DIR
 
 THEMES = {
     "dark": {
-        "bg": "#0a0b0e",            # Derin gece siyahı zemin
-        "card_bg": "#12151c",       # Koyu antrasit/obsidyen kart yüzeyi
-        "card_border": "#1e2433",   # Zarif lacivert çerçeve
-        "inset_bg": "#0d0f14",      # Gömülü giriş alanı arka planı
-        "inset_border": "#1c2230",  # Gömülü kenarlık
-        "btn_raised": "#181e2b",    # Koyu mavi-siyah buton
-        "btn_hover": "#222b3d",     # Buton hover
-        "btn_border": "#2a354b",    # Buton çerçeve
-        "accent": "#3b82f6",        # Canlı safir / elektrik mavisi
-        "accent_hover": "#2563eb",  # Koyu mavi hover
-        "accent_text": "#ffffff",   # Vurgu üzerindeki beyaz metin
-        "accent_card": "#2563eb",   # Ana işlem butonu (Royal Blue)
-        "text": "#f8fafc",          # Net beyaz metin
-        "text_subtle": "#94a3b8",   # Açık kurşuni ikincil metin
-        "muted": "#64748b",         # Nötr etiketler
-        "dim": "#475569",           # İpucu ve yer tutucu metin
-        "success": "#10b981",       # Yeşil durum ikonu
-        "warning": "#3b82f6",       # Mavi durum ikonu
-        "error": "#ef4444",         # Kırmızı hata ikonu
-        "tree_bg": "#12151c",       # Tablo arka planı
-        "tree_fg": "#f8fafc",       # Tablo satır metni
-        "tree_head_bg": "#181e2b",  # Tablo başlık arka planı
-        "tree_head_fg": "#f8fafc",  # Tablo başlık metni
-        "tree_selected": "#1e293b", # Tablo seçili satır
+        "bg": "#0a0b0e",
+        "card_bg": "#12151c",
+        "card_border": "#1e2433",
+        "inset_bg": "#0d0f14",
+        "inset_border": "#1c2230",
+        "btn_raised": "#181e2b",
+        "btn_hover": "#222b3d",
+        "btn_border": "#2a354b",
+        "accent": "#3b82f6",
+        "accent_hover": "#2563eb",
+        "accent_text": "#ffffff",
+        "accent_card": "#2563eb",
+        "text": "#f8fafc",
+        "text_subtle": "#94a3b8",
+        "muted": "#64748b",
+        "dim": "#475569",
+        "success": "#10b981",
+        "warning": "#3b82f6",
+        "error": "#ef4444",
+        "tree_bg": "#12151c",
+        "tree_fg": "#f8fafc",
+        "tree_head_bg": "#181e2b",
+        "tree_head_fg": "#f8fafc",
+        "tree_selected": "#1e293b",
     },
     "light": {
-        "bg": "#f8fafc",            # Temiz buz beyazı zemin
-        "card_bg": "#ffffff",       # Saf beyaz kart yüzeyi
-        "card_border": "#e2e8f0",   # Yumuşak gri-mavi çerçeve
-        "inset_bg": "#f1f5f9",      # Açık gömülü giriş alanı
-        "inset_border": "#cbd5e1",  # Gömülü kenarlık
-        "btn_raised": "#f1f5f9",    # Açık buton
-        "btn_hover": "#e2e8f0",     # Buton hover
-        "btn_border": "#cbd5e1",    # Buton kenarlık
-        "accent": "#2563eb",        # Kraliyet mavisi
-        "accent_hover": "#1d4ed8",  # Koyu mavi hover
-        "accent_text": "#ffffff",   # Beyaz metin
-        "accent_card": "#2563eb",   # Ana buton
-        "text": "#0f172a",          # Koyu arduvaz metin
-        "text_subtle": "#334155",   # İkincil metin
-        "muted": "#64748b",         # Nötr etiketler
-        "dim": "#94a3b8",           # Yer tutucu metin
-        "success": "#059669",       # Yeşil durum
-        "warning": "#2563eb",       # Mavi durum
-        "error": "#dc2626",         # Kırmızı hata
-        "tree_bg": "#ffffff",       # Tablo arka planı
-        "tree_fg": "#0f172a",       # Tablo satır metni
-        "tree_head_bg": "#f1f5f9",  # Tablo başlık arka planı
-        "tree_head_fg": "#0f172a",  # Tablo başlık metni
-        "tree_selected": "#dbeafe", # Tablo açık mavi seçim
+        "bg": "#f8fafc",
+        "card_bg": "#ffffff",
+        "card_border": "#e2e8f0",
+        "inset_bg": "#f1f5f9",
+        "inset_border": "#cbd5e1",
+        "btn_raised": "#f1f5f9",
+        "btn_hover": "#e2e8f0",
+        "btn_border": "#cbd5e1",
+        "accent": "#2563eb",
+        "accent_hover": "#1d4ed8",
+        "accent_text": "#ffffff",
+        "accent_card": "#2563eb",
+        "text": "#0f172a",
+        "text_subtle": "#334155",
+        "muted": "#64748b",
+        "dim": "#94a3b8",
+        "success": "#059669",
+        "warning": "#2563eb",
+        "error": "#dc2626",
+        "tree_bg": "#ffffff",
+        "tree_fg": "#0f172a",
+        "tree_head_bg": "#f1f5f9",
+        "tree_head_fg": "#0f172a",
+        "tree_selected": "#dbeafe",
     },
 }
 
@@ -139,7 +139,7 @@ class ScrapeAgentApp(ctk.CTk):
     def _init_ui(self):
         t = self.theme
 
-        # Üst Başlık Kartı
+        # Header
         self.header_card = ctk.CTkFrame(
             self,
             fg_color=t["card_bg"],
@@ -164,13 +164,12 @@ class ScrapeAgentApp(ctk.CTk):
 
         self.lbl_sub = ctk.CTkLabel(
             title_box,
-            text="Web Veri Kazıma ve Dışa Aktarma Aracı",
+            text="Web Scraping & Data Extraction Tool",
             font=ctk.CTkFont(family=FONT_BODY, size=11),
             text_color=t["text_subtle"],
         )
         self.lbl_sub.pack(anchor="w")
 
-        # Sağ Kontroller (Durum, Tema, Klasör)
         hdr_right = ctk.CTkFrame(self.header_card, fg_color="transparent")
         hdr_right.pack(side="right", padx=20, pady=14)
 
@@ -194,7 +193,7 @@ class ScrapeAgentApp(ctk.CTk):
 
         self.status_text = ctk.CTkLabel(
             self.status_pill,
-            text="Hazır",
+            text="Ready",
             font=ctk.CTkFont(family=FONT_DISPLAY, size=10, weight="bold"),
             text_color=t["text"],
         )
@@ -202,7 +201,7 @@ class ScrapeAgentApp(ctk.CTk):
 
         self.btn_theme = ctk.CTkButton(
             hdr_right,
-            text="☀ Açık Mod",
+            text="☀ Light Mode",
             font=ctk.CTkFont(family=FONT_BODY, size=11),
             fg_color=t["btn_raised"],
             hover_color=t["btn_hover"],
@@ -211,14 +210,14 @@ class ScrapeAgentApp(ctk.CTk):
             text_color=t["text"],
             corner_radius=10,
             height=34,
-            width=90,
+            width=96,
             command=self.toggle_theme,
         )
         self.btn_theme.pack(side="left", padx=(0, 10))
 
         self.btn_folder = ctk.CTkButton(
             hdr_right,
-            text="Çıktı Klasörü",
+            text="Output Folder",
             font=ctk.CTkFont(family=FONT_BODY, size=11),
             fg_color=t["btn_raised"],
             hover_color=t["btn_hover"],
@@ -231,7 +230,7 @@ class ScrapeAgentApp(ctk.CTk):
         )
         self.btn_folder.pack(side="left")
 
-        # URL ve Ayarlar Kartı
+        # Controls
         self.control_card = ctk.CTkFrame(
             self,
             fg_color=t["card_bg"],
@@ -241,7 +240,6 @@ class ScrapeAgentApp(ctk.CTk):
         )
         self.control_card.pack(fill="x", padx=20, pady=(0, 12))
 
-        # Satır 1: URL ve Kazı Butonu
         url_row = ctk.CTkFrame(self.control_card, fg_color="transparent")
         url_row.pack(fill="x", padx=20, pady=(16, 12))
 
@@ -265,13 +263,13 @@ class ScrapeAgentApp(ctk.CTk):
             corner_radius=10,
             height=40,
         )
-        self.url_entry.insert(0, "https://deprem.afad.gov.tr/last-earthquakes.html")
+        self.url_entry.insert(0, "https://quotes.toscrape.com/")
         self.url_entry.pack(side="left", fill="x", expand=True, padx=(0, 14))
         self.url_entry.bind("<Return>", lambda e: self.start_scraping())
 
         self.btn_scrape = ctk.CTkButton(
             url_row,
-            text="Verileri Çek",
+            text="Scrape Data",
             font=ctk.CTkFont(family=FONT_BODY, size=12, weight="bold"),
             fg_color=t["accent_card"],
             hover_color=t["accent_hover"],
@@ -280,18 +278,17 @@ class ScrapeAgentApp(ctk.CTk):
             text_color=t["accent_text"],
             corner_radius=10,
             height=40,
-            width=140,
+            width=130,
             command=self.start_scraping,
         )
         self.btn_scrape.pack(side="right")
 
-        # Satır 2: Motor ve Örnek Siteler
         opts_row = ctk.CTkFrame(self.control_card, fg_color="transparent")
         opts_row.pack(fill="x", padx=20, pady=(0, 16))
 
         self.lbl_engine = ctk.CTkLabel(
             opts_row,
-            text="Motor:",
+            text="Engine:",
             font=ctk.CTkFont(family=FONT_BODY, size=11),
             text_color=t["text_subtle"],
         )
@@ -299,7 +296,7 @@ class ScrapeAgentApp(ctk.CTk):
 
         self.engine_segmented = ctk.CTkSegmentedButton(
             opts_row,
-            values=["HTTP (Hızlı)", "Tarayıcı (Playwright)"],
+            values=["HTTP (Fast)", "Browser (Playwright)"],
             font=ctk.CTkFont(family=FONT_BODY, size=11),
             fg_color=t["inset_bg"],
             selected_color=t["accent_card"],
@@ -310,12 +307,12 @@ class ScrapeAgentApp(ctk.CTk):
             corner_radius=8,
             height=30,
         )
-        self.engine_segmented.set("HTTP (Hızlı)")
+        self.engine_segmented.set("HTTP (Fast)")
         self.engine_segmented.pack(side="left", padx=(0, 24))
 
         self.lbl_presets = ctk.CTkLabel(
             opts_row,
-            text="Örnek Siteler:",
+            text="Presets:",
             font=ctk.CTkFont(family=FONT_BODY, size=11),
             text_color=t["text_subtle"],
         )
@@ -324,8 +321,8 @@ class ScrapeAgentApp(ctk.CTk):
         self.preset_menu = ctk.CTkOptionMenu(
             opts_row,
             values=[
-                "AFAD Son Depremler",
                 "Quotes to Scrape",
+                "Books to Scrape",
                 "Hacker News",
             ],
             font=ctk.CTkFont(family=FONT_BODY, size=11),
@@ -338,13 +335,13 @@ class ScrapeAgentApp(ctk.CTk):
             text_color=t["text"],
             corner_radius=8,
             height=30,
-            width=170,
+            width=160,
             command=self.on_preset_change,
         )
-        self.preset_menu.set("AFAD Son Depremler")
+        self.preset_menu.set("Quotes to Scrape")
         self.preset_menu.pack(side="left")
 
-        # Veri Tablosu Alanı
+        # Table area
         self.workspace_card = ctk.CTkFrame(
             self,
             fg_color=t["card_bg"],
@@ -359,7 +356,7 @@ class ScrapeAgentApp(ctk.CTk):
 
         self.lbl_table_title = ctk.CTkLabel(
             ws_hdr,
-            text="Çıkarılan Veriler (0 kayıt)",
+            text="Extracted Data (0 records)",
             font=ctk.CTkFont(family=FONT_DISPLAY, size=12, weight="bold"),
             text_color=t["accent"],
         )
@@ -370,7 +367,7 @@ class ScrapeAgentApp(ctk.CTk):
 
         self.filter_entry = ctk.CTkEntry(
             search_box,
-            placeholder_text="Tabloda ara...",
+            placeholder_text="Search in table...",
             placeholder_text_color=t["dim"],
             font=ctk.CTkFont(family=FONT_BODY, size=11),
             fg_color=t["inset_bg"],
@@ -425,7 +422,7 @@ class ScrapeAgentApp(ctk.CTk):
         self.x_scroll.configure(command=self.tree.xview)
         self.tree.pack(fill="both", expand=True, padx=(4, 0), pady=(4, 0))
 
-        # Alt Bilgi ve Butonlar
+        # Footer
         self.footer_card = ctk.CTkFrame(
             self,
             fg_color=t["card_bg"],
@@ -439,7 +436,7 @@ class ScrapeAgentApp(ctk.CTk):
 
         self.status_msg = ctk.CTkLabel(
             self.footer_card,
-            text="Hazır. Bir URL girin ve 'Verileri Çek' butonuna tıklayın.",
+            text="Ready. Enter a URL and click 'Scrape Data'.",
             font=ctk.CTkFont(family=FONT_BODY, size=11),
             text_color=t["text_subtle"],
         )
@@ -460,7 +457,7 @@ class ScrapeAgentApp(ctk.CTk):
 
         self.btn_csv = ctk.CTkButton(
             actions_box,
-            text="CSV İndir",
+            text="Export CSV",
             font=ctk.CTkFont(family=FONT_BODY, size=11),
             fg_color=t["btn_raised"],
             hover_color=t["btn_hover"],
@@ -469,14 +466,14 @@ class ScrapeAgentApp(ctk.CTk):
             text_color=t["text"],
             corner_radius=8,
             height=28,
-            width=80,
+            width=84,
             command=self.save_csv,
         )
         self.btn_csv.pack(side="left", padx=(0, 6))
 
         self.btn_json = ctk.CTkButton(
             actions_box,
-            text="JSON İndir",
+            text="Export JSON",
             font=ctk.CTkFont(family=FONT_BODY, size=11),
             fg_color=t["btn_raised"],
             hover_color=t["btn_hover"],
@@ -485,14 +482,14 @@ class ScrapeAgentApp(ctk.CTk):
             text_color=t["text"],
             corner_radius=8,
             height=28,
-            width=80,
+            width=84,
             command=self.save_json,
         )
         self.btn_json.pack(side="left", padx=(0, 6))
 
         self.btn_clear = ctk.CTkButton(
             actions_box,
-            text="Temizle",
+            text="Clear",
             font=ctk.CTkFont(family=FONT_BODY, size=11),
             fg_color=t["btn_raised"],
             hover_color=t["btn_hover"],
@@ -501,7 +498,7 @@ class ScrapeAgentApp(ctk.CTk):
             text_color=t["muted"],
             corner_radius=8,
             height=28,
-            width=65,
+            width=60,
             command=self.clear_table,
         )
         self.btn_clear.pack(side="left")
@@ -525,7 +522,7 @@ class ScrapeAgentApp(ctk.CTk):
         self.status_text.configure(text_color=t["text"])
         self.status_dot.configure(text_color=t["warning"] if self.is_scraping else t["success"])
         self.btn_theme.configure(
-            text="☀ Açık Mod" if mode == "dark" else "🌙 Koyu Mod",
+            text="☀ Light Mode" if mode == "dark" else "🌙 Dark Mode",
             fg_color=t["btn_raised"],
             hover_color=t["btn_hover"],
             border_color=t["btn_border"],
@@ -618,8 +615,8 @@ class ScrapeAgentApp(ctk.CTk):
 
     def on_preset_change(self, choice: str):
         presets = {
-            "AFAD Son Depremler": "https://deprem.afad.gov.tr/last-earthquakes.html",
             "Quotes to Scrape": "https://quotes.toscrape.com/",
+            "Books to Scrape": "https://books.toscrape.com/",
             "Hacker News": "https://news.ycombinator.com/",
         }
         if choice in presets:
@@ -640,21 +637,21 @@ class ScrapeAgentApp(ctk.CTk):
 
         raw_url = self.url_entry.get().strip()
         if not raw_url:
-            messagebox.showwarning("URL Eksik", "Lütfen bir web adresi girin.")
+            messagebox.showwarning("Missing URL", "Please enter a target web URL.")
             return
 
         if not is_valid_url(raw_url):
-            messagebox.showerror("Geçersiz URL", f"Girilen adres geçerli bir URL değil:\n'{raw_url}'")
+            messagebox.showerror("Invalid URL", f"The entered address is not a valid web URL:\n'{raw_url}'")
             return
 
         url = normalize_url(raw_url)
         use_browser = "Playwright" in self.engine_segmented.get()
 
         self.is_scraping = True
-        self.btn_scrape.configure(state="disabled", text="Çekiliyor...")
+        self.btn_scrape.configure(state="disabled", text="Scraping...")
         self.status_dot.configure(text_color=self.theme["warning"])
-        self.status_text.configure(text="İşleniyor")
-        self.status_msg.configure(text=f"{url} adresine bağlanılıyor...")
+        self.status_text.configure(text="Working")
+        self.status_msg.configure(text=f"Connecting to {url}...")
 
         self.progress_bar.pack(side="left", padx=16)
         self.progress_bar.start()
@@ -666,20 +663,20 @@ class ScrapeAgentApp(ctk.CTk):
         try:
             if use_browser:
                 from core.browser_fetcher import fetch_page_browser
-                self.after(0, lambda: self.status_msg.configure(text="Sayfa tarayıcıda yükleniyor..."))
+                self.after(0, lambda: self.status_msg.configure(text="Rendering page in browser..."))
                 raw_html = fetch_page_browser(url)
             else:
-                self.after(0, lambda: self.status_msg.configure(text="HTML yanıtı alınıyor..."))
+                self.after(0, lambda: self.status_msg.configure(text="Fetching HTML response..."))
                 resp = fetch_page(url)
                 raw_html = resp.text
 
-            self.after(0, lambda: self.status_msg.configure(text="İçerik analiz ediliyor..."))
+            self.after(0, lambda: self.status_msg.configure(text="Parsing page content..."))
             soup = clean_html(raw_html)
 
             block_reason = check_bot_protection(soup)
             if block_reason:
-                msg = f"Bot koruması tespit edildi ({block_reason}). Site erişimi engelledi."
-                self.after(0, lambda: messagebox.showwarning("Bot Koruması", msg))
+                msg = f"Bot protection detected ({block_reason}). Access was denied."
+                self.after(0, lambda: messagebox.showwarning("Bot Protection", msg))
 
             extractor = UniversalExtractor(base_url=url)
             records = extractor.extract_all(soup)
@@ -704,34 +701,34 @@ class ScrapeAgentApp(ctk.CTk):
     def _on_scrape_success(self, records: list[dict], filename: str, elapsed: float):
         self.current_records = records
         self.render_table(self.current_records)
-        self.status_msg.configure(text=f"{len(records)} kayıt çekildi ({elapsed:.2f} sn). output/{filename} dosyasına kaydedildi.")
+        self.status_msg.configure(text=f"Extracted {len(records)} records ({elapsed:.2f}s). Saved to output/{filename}")
 
     def _on_scrape_empty(self, url: str):
-        self.status_msg.configure(text="Sayfada yapısal veri veya tablo bulunamadı.")
-        messagebox.showinfo("Veri Bulunamadı", "Bu sayfada tekrarlayan liste veya tablo yapısı tespit edilemedi.")
+        self.status_msg.configure(text="No structured data or tables found on page.")
+        messagebox.showinfo("No Data Found", "No recurring item cards or data tables were detected on this page.")
 
     def _on_scrape_error(self, error: Exception):
-        self.status_msg.configure(text=f"Hata: {error}")
-        messagebox.showerror("Hata", f"Veri çekilemedi:\n{error}")
+        self.status_msg.configure(text=f"Error: {error}")
+        messagebox.showerror("Scraping Error", f"Extraction failed:\n{error}")
 
     def _reset_ui(self):
         self.progress_bar.stop()
         self.progress_bar.pack_forget()
-        self.btn_scrape.configure(state="normal", text="Verileri Çek")
+        self.btn_scrape.configure(state="normal", text="Scrape Data")
         self.status_dot.configure(text_color=self.theme["success"])
-        self.status_text.configure(text="Hazır")
+        self.status_text.configure(text="Ready")
 
     def render_table(self, records: list[dict]):
         for item in self.tree.get_children():
             self.tree.delete(item)
 
         if not records:
-            self.lbl_table_title.configure(text="Çıkarılan Veriler (0 kayıt)")
+            self.lbl_table_title.configure(text="Extracted Data (0 records)")
             return
 
         all_keys = list(dict.fromkeys(k for row in records for k in row.keys()))
 
-        if "title" in all_keys and any(k in all_keys for k in ["Yer", "name", "headline", "item_name"]):
+        if "title" in all_keys and any(k in all_keys for k in ["name", "headline", "item_name"]):
             all_keys.remove("title")
 
         cols = ["#"] + all_keys
@@ -745,17 +742,17 @@ class ScrapeAgentApp(ctk.CTk):
                 self.tree.column(col, width=45, minwidth=35, anchor="center")
             elif "url" in col_l or "link" in col_l:
                 self.tree.column(col, width=280, minwidth=180, anchor="w")
-            elif any(d in col_l for d in ["tarih", "date", "time"]):
+            elif any(d in col_l for d in ["date", "time"]):
                 self.tree.column(col, width=160, minwidth=120, anchor="center")
-            elif any(y in col_l for y in ["yer", "title", "name", "description", "headline"]):
+            elif any(y in col_l for y in ["title", "name", "description", "headline", "location"]):
                 self.tree.column(col, width=260, minwidth=180, anchor="w")
-            elif any(m in col_l for m in ["büyüklük", "mag", "price", "rating", "derinlik", "enlem", "boylam", "tip"]):
+            elif any(m in col_l for m in ["price", "rating", "mag", "depth", "type", "count"]):
                 self.tree.column(col, width=95, minwidth=70, anchor="center")
             else:
                 self.tree.column(col, width=120, minwidth=80, anchor="center")
 
         self._insert_rows(records)
-        self.lbl_table_title.configure(text=f"Çıkarılan Veriler ({len(records)} kayıt)")
+        self.lbl_table_title.configure(text=f"Extracted Data ({len(records)} records)")
 
     def _insert_rows(self, records: list[dict]):
         for item in self.tree.get_children():
@@ -779,7 +776,7 @@ class ScrapeAgentApp(ctk.CTk):
         query = self.filter_entry.get().strip().lower()
         if not query:
             self._insert_rows(self.current_records)
-            self.lbl_table_title.configure(text=f"Çıkarılan Veriler ({len(self.current_records)} kayıt)")
+            self.lbl_table_title.configure(text=f"Extracted Data ({len(self.current_records)} records)")
             return
 
         filtered = [
@@ -787,44 +784,44 @@ class ScrapeAgentApp(ctk.CTk):
             if any(query in str(v).lower() for v in r.values())
         ]
         self._insert_rows(filtered)
-        self.lbl_table_title.configure(text=f"Çıkarılan Veriler ({len(filtered)} / {len(self.current_records)} kayıt)")
+        self.lbl_table_title.configure(text=f"Extracted Data ({len(filtered)} / {len(self.current_records)} records)")
 
     def save_csv(self):
         if not self.current_records:
-            messagebox.showwarning("Uyarı", "Dışa aktarılacak kayıt bulunamadı.")
+            messagebox.showwarning("Warning", "No records available to export.")
             return
 
         filename = getattr(self, "last_saved_file", None)
         if not filename:
-            raw_url = self.url_entry.get().strip() or "veri"
+            raw_url = self.url_entry.get().strip() or "data"
             filename = derive_default_filename(raw_url, ext="csv")
 
         os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True)
         dest_path = os.path.join(DEFAULT_OUTPUT_DIR, filename)
         export_data(self.current_records, dest_path)
-        self.status_msg.configure(text=f"{len(self.current_records)} kayıt kaydedildi: output/{filename}")
-        messagebox.showinfo("Başarılı", f"Kayıtlar kaydedildi:\n\noutput/{filename}")
+        self.status_msg.configure(text=f"Saved {len(self.current_records)} records to: output/{filename}")
+        messagebox.showinfo("Success", f"Records saved to:\n\noutput/{filename}")
 
     def save_json(self):
         if not self.current_records:
-            messagebox.showwarning("Uyarı", "Dışa aktarılacak kayıt bulunamadı.")
+            messagebox.showwarning("Warning", "No records available to export.")
             return
 
-        raw_url = self.url_entry.get().strip() or "veri"
+        raw_url = self.url_entry.get().strip() or "data"
         filename = derive_default_filename(raw_url, ext="json")
 
         os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True)
         dest_path = os.path.join(DEFAULT_OUTPUT_DIR, filename)
         export_data(self.current_records, dest_path)
-        self.status_msg.configure(text=f"{len(self.current_records)} kayıt kaydedildi: output/{filename}")
-        messagebox.showinfo("Başarılı", f"Kayıtlar kaydedildi:\n\noutput/{filename}")
+        self.status_msg.configure(text=f"Saved {len(self.current_records)} records to: output/{filename}")
+        messagebox.showinfo("Success", f"Records saved to:\n\noutput/{filename}")
 
     def clear_table(self):
         self.current_records = []
         for item in self.tree.get_children():
             self.tree.delete(item)
-        self.lbl_table_title.configure(text="Çıkarılan Veriler (0 kayıt)")
-        self.status_msg.configure(text="Tablo temizlendi.")
+        self.lbl_table_title.configure(text="Extracted Data (0 records)")
+        self.status_msg.configure(text="Table cleared.")
 
 
 def main():

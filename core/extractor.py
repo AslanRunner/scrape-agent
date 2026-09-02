@@ -1,4 +1,4 @@
-"""Otomatik veri çıkarma modülü."""
+"""Universal pattern discovery and data extraction engine."""
 import json
 import re
 from urllib.parse import urljoin
@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup, Tag
 
 
 class UniversalExtractor:
-    """HTML sayfalarındaki tekrarlayan liste, kart ve tablo yapılarını otomatik çıkarır."""
+    """Extract repeating list, card, and table records from HTML markup."""
 
     def __init__(self, base_url: str):
         self.base_url = base_url

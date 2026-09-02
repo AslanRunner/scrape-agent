@@ -1,4 +1,4 @@
-"""HTML temizleme modülü."""
+"""HTML cleanup and sanitization module."""
 from bs4 import BeautifulSoup, Comment
 
 UNWANTED_TAGS = [
@@ -14,7 +14,7 @@ UNWANTED_TAGS = [
 
 
 def clean_html(html_content: str) -> BeautifulSoup:
-    """Gereksiz etiketleri ve yorumları HTML içeriğinden temizler."""
+    """Strip noise tags and comments while preserving semantic structure and JSON-LD."""
     soup = BeautifulSoup(html_content, "html.parser")
 
     # Remove comments

@@ -1,4 +1,4 @@
-"""ScrapeAgent komut satırı arayüzü."""
+"""ScrapeAgent command-line interface."""
 import argparse
 import os
 import re
@@ -66,13 +66,13 @@ def check_bot_protection(soup) -> str | None:
     if any(sig in title_text for sig in ["recaptcha", "checking your browser", "just a moment...", "cloudflare"]):
         return "Cloudflare / reCAPTCHA"
     if any(sig in title_text for sig in ["attention required", "access denied", "security check", "robot or human?"]):
-        return "Erişim Engellendi (Bot Koruması)"
+        return "Access Denied (Bot Protection)"
     return None
 
 
 def run_agent(url: str, output_path: str | None = None, use_browser: bool = False) -> None:
     if not is_valid_url(url):
-        print(f"Hata: Geçersiz URL -> '{url}'")
+        print(f"Error: Invalid URL -> '{url}'")
         return
 
     url = normalize_url(url)
@@ -80,7 +80,7 @@ def run_agent(url: str, output_path: str | None = None, use_browser: bool = Fals
         output_path = os.path.join(DEFAULT_OUTPUT_DIR, derive_default_filename(url, ext="csv"))
 
     engine = "Playwright" if use_browser else "HTTP"
-    print(f"\nBağlanılıyor: {url} [{engine}]")
+    print(f"\nConnecting: {url} [{engine}]")
 
     try:
         if use_browser:
@@ -94,41 +94,40 @@ def run_agent(url: str, output_path: str | None = None, use_browser: bool = Fals
 
         block = check_bot_protection(soup)
         if block:
-            print(f"Bot engeli tespit edildi: {block}")
+            print(f"Bot protection detected: {block}")
             return
 
         extractor = UniversalExtractor(base_url=url)
         results = extractor.extract_all(soup)
 
         if not results:
-            print("Sayfada yapısal veri bulunamadı.")
+            print("No structured data found on page.")
             if not use_browser:
-                print("İpucu: JavaScript tabanlı siteler için '--browser' seçeneğini deneyebilirsiniz.")
+                print("Tip: Try '--browser' for dynamic JavaScript pages.")
             return
 
-        print(f"{len(results)} kayıt çıkarıldı.\n")
+        print(f"Extracted {len(results)} records.\n")
 
-        # İlk 5 kaydı önizleme olarak göster
-        print("--- İlk 5 Kayıt ---")
+        print("--- Preview (First 5 Items) ---")
         for i, item in enumerate(results[:5], 1):
-            title = item.get("title", "Başlık Yok")
+            title = item.get("title", "No Title")
             disp_title = title if len(title) <= 50 else title[:47] + "..."
             price_info = f"{item.get('currency', '')}{item.get('price', '')}" if "price" in item else ""
             print(f"  {i}. {disp_title} {price_info}")
 
         if len(results) > 5:
-            print(f"  ... ve {len(results) - 5} kayıt daha.")
+            print(f"  ... and {len(results) - 5} more records.")
 
         saved_file = export_data(results, output_path)
-        print(f"\nKaydedildi: {saved_file}")
+        print(f"\nSaved: {saved_file}")
 
     except Exception as e:
-        print(f"Hata: {e}")
+        print(f"Error: {e}")
 
 
 def open_output_folder():
     os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True)
-    print(f"\nKlasör açılıyor: {DEFAULT_OUTPUT_DIR}")
+    print(f"\nOpening folder: {DEFAULT_OUTPUT_DIR}")
     if sys.platform == "win32":
         os.startfile(DEFAULT_OUTPUT_DIR)
     else:
@@ -137,7 +136,7 @@ def open_output_folder():
 
 def launch_gui():
     script_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "desktop_gui.py")
-    print("\nMasaüstü arayüzü başlatılıyor...")
+    print("\nLaunching desktop GUI...")
     subprocess.Popen([sys.executable, script_path])
 
 
@@ -146,52 +145,52 @@ def interactive_menu():
         print("\n==============================")
         print("         ScrapeAgent          ")
         print("==============================")
-        print("1. URL Kazı (Hızlı HTTP)")
-        print("2. URL Kazı (Playwright Tarayıcı)")
-        print("3. Masaüstü Arayüzünü Başlat")
-        print("4. Çıktı Klasörünü Aç")
-        print("5. Çıkış")
+        print("1. Scrape URL (Fast HTTP)")
+        print("2. Scrape URL (Playwright Browser)")
+        print("3. Launch Desktop GUI")
+        print("4. Open Output Folder")
+        print("5. Exit")
 
-        choice = input("\nSeçiminiz (1-5) [1]: ").strip() or "1"
+        choice = input("\nSelect an option (1-5) [1]: ").strip() or "1"
 
         if choice in ("1", "2"):
             use_browser = choice == "2"
             while True:
-                raw_url = input("\nHedef URL ('iptal' için boş bırakın): ").strip()
-                if not raw_url or raw_url.lower() == "iptal":
+                raw_url = input("\nTarget URL (or 'cancel' to return): ").strip()
+                if not raw_url or raw_url.lower() == "cancel":
                     break
                 if is_valid_url(raw_url):
                     url = normalize_url(raw_url)
                     auto_name = derive_default_filename(url, ext="csv")
-                    out_input = input(f"Dosya adı [Enter: '{auto_name}']: ").strip()
+                    out_input = input(f"Filename [Enter for '{auto_name}']: ").strip()
                     output_file = out_input if out_input else auto_name
                     run_agent(url, output_path=output_file, use_browser=use_browser)
                     break
-                print(f"Geçersiz URL formatı: '{raw_url}'")
+                print(f"Invalid URL format: '{raw_url}'")
 
-            input("\nMenüye dönmek için Enter'a basın...")
+            input("\nPress Enter to return to menu...")
 
         elif choice == "3":
             launch_gui()
-            input("\nMenüye dönmek için Enter'a basın...")
+            input("\nPress Enter to return to menu...")
 
         elif choice == "4":
             open_output_folder()
-            input("\nMenüye dönmek için Enter'a basın...")
+            input("\nPress Enter to return to menu...")
 
         elif choice == "5":
-            print("\nÇıkış yapıldı.")
+            print("\nExited.")
             break
         else:
-            print("Lütfen 1-5 arasında bir değer seçin.")
+            print("Please select an option between 1 and 5.")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ScrapeAgent - Web Veri Kazıyıcı")
-    parser.add_argument("--url", "-u", type=str, help="Kazınacak hedef web adresi")
-    parser.add_argument("--output", "-o", type=str, default=None, help="Çıktı dosyası yolu (.csv veya .json)")
-    parser.add_argument("--browser", "-b", action="store_true", help="Dinamik JavaScript sayfaları için Playwright kullan")
-    parser.add_argument("--gui", "-g", action="store_true", help="Masaüstü grafik arayüzünü başlat")
+    parser = argparse.ArgumentParser(description="ScrapeAgent - Web Data Scraper")
+    parser.add_argument("--url", "-u", type=str, help="Target URL to scrape")
+    parser.add_argument("--output", "-o", type=str, default=None, help="Output file path (.csv or .json)")
+    parser.add_argument("--browser", "-b", action="store_true", help="Render dynamic JavaScript pages using Playwright")
+    parser.add_argument("--gui", "-g", action="store_true", help="Launch desktop graphical interface")
 
     args = parser.parse_args()
 

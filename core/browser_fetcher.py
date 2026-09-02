@@ -1,9 +1,9 @@
-"""Playwright tarayıcı render modülü."""
+"""Headless browser rendering module using Playwright."""
 import sys
 
 
 def fetch_page_browser(url: str, timeout_ms: int = 30000, headless: bool = True) -> str:
-    """Dinamik JavaScript sayfalarını Chromium ile render edip HTML döndürür."""
+    """Render dynamic JavaScript/SPA pages using Chromium and return HTML source."""
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
