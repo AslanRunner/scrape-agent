@@ -21,56 +21,56 @@ from config import DEFAULT_OUTPUT_DIR
 
 THEMES = {
     "dark": {
-        "bg": "#121214",
-        "card_bg": "#1a1a1f",
-        "card_border": "#2c2c36",
-        "inset_bg": "#151518",
-        "inset_border": "#282832",
-        "btn_raised": "#24242c",
-        "btn_hover": "#32323c",
-        "btn_border": "#3c3c4a",
-        "accent": "#f59e0b",
-        "accent_hover": "#d97706",
-        "accent_text": "#18181b",
-        "accent_card": "#f59e0b",
-        "text": "#fafafa",
-        "text_subtle": "#d4d4d8",
-        "muted": "#a1a1aa",
-        "dim": "#71717a",
-        "success": "#10b981",
-        "warning": "#f59e0b",
-        "error": "#ef4444",
-        "tree_bg": "#1a1a1f",
-        "tree_fg": "#fafafa",
-        "tree_head_bg": "#24242c",
-        "tree_head_fg": "#fafafa",
-        "tree_selected": "#2e2e3a",
+        "bg": "#0a0b0e",            # Derin gece siyahı zemin
+        "card_bg": "#12151c",       # Koyu antrasit/obsidyen kart yüzeyi
+        "card_border": "#1e2433",   # Zarif lacivert çerçeve
+        "inset_bg": "#0d0f14",      # Gömülü giriş alanı arka planı
+        "inset_border": "#1c2230",  # Gömülü kenarlık
+        "btn_raised": "#181e2b",    # Koyu mavi-siyah buton
+        "btn_hover": "#222b3d",     # Buton hover
+        "btn_border": "#2a354b",    # Buton çerçeve
+        "accent": "#3b82f6",        # Canlı safir / elektrik mavisi
+        "accent_hover": "#2563eb",  # Koyu mavi hover
+        "accent_text": "#ffffff",   # Vurgu üzerindeki beyaz metin
+        "accent_card": "#2563eb",   # Ana işlem butonu (Royal Blue)
+        "text": "#f8fafc",          # Net beyaz metin
+        "text_subtle": "#94a3b8",   # Açık kurşuni ikincil metin
+        "muted": "#64748b",         # Nötr etiketler
+        "dim": "#475569",           # İpucu ve yer tutucu metin
+        "success": "#10b981",       # Yeşil durum ikonu
+        "warning": "#3b82f6",       # Mavi durum ikonu
+        "error": "#ef4444",         # Kırmızı hata ikonu
+        "tree_bg": "#12151c",       # Tablo arka planı
+        "tree_fg": "#f8fafc",       # Tablo satır metni
+        "tree_head_bg": "#181e2b",  # Tablo başlık arka planı
+        "tree_head_fg": "#f8fafc",  # Tablo başlık metni
+        "tree_selected": "#1e293b", # Tablo seçili satır
     },
     "light": {
-        "bg": "#f6f5f0",
-        "card_bg": "#ffffff",
-        "card_border": "#e3ded5",
-        "inset_bg": "#f0ede5",
-        "inset_border": "#d8d3c5",
-        "btn_raised": "#eae6dc",
-        "btn_hover": "#dfdad0",
-        "btn_border": "#cec8bc",
-        "accent": "#d97706",
-        "accent_hover": "#b45309",
-        "accent_text": "#ffffff",
-        "accent_card": "#d97706",
-        "text": "#1c1917",
-        "text_subtle": "#44403c",
-        "muted": "#78716c",
-        "dim": "#a8a29e",
-        "success": "#059669",
-        "warning": "#d97706",
-        "error": "#dc2626",
-        "tree_bg": "#ffffff",
-        "tree_fg": "#1c1917",
-        "tree_head_bg": "#eae6dc",
-        "tree_head_fg": "#1c1917",
-        "tree_selected": "#e3ded5",
+        "bg": "#f8fafc",            # Temiz buz beyazı zemin
+        "card_bg": "#ffffff",       # Saf beyaz kart yüzeyi
+        "card_border": "#e2e8f0",   # Yumuşak gri-mavi çerçeve
+        "inset_bg": "#f1f5f9",      # Açık gömülü giriş alanı
+        "inset_border": "#cbd5e1",  # Gömülü kenarlık
+        "btn_raised": "#f1f5f9",    # Açık buton
+        "btn_hover": "#e2e8f0",     # Buton hover
+        "btn_border": "#cbd5e1",    # Buton kenarlık
+        "accent": "#2563eb",        # Kraliyet mavisi
+        "accent_hover": "#1d4ed8",  # Koyu mavi hover
+        "accent_text": "#ffffff",   # Beyaz metin
+        "accent_card": "#2563eb",   # Ana buton
+        "text": "#0f172a",          # Koyu arduvaz metin
+        "text_subtle": "#334155",   # İkincil metin
+        "muted": "#64748b",         # Nötr etiketler
+        "dim": "#94a3b8",           # Yer tutucu metin
+        "success": "#059669",       # Yeşil durum
+        "warning": "#2563eb",       # Mavi durum
+        "error": "#dc2626",         # Kırmızı hata
+        "tree_bg": "#ffffff",       # Tablo arka planı
+        "tree_fg": "#0f172a",       # Tablo satır metni
+        "tree_head_bg": "#f1f5f9",  # Tablo başlık arka planı
+        "tree_head_fg": "#0f172a",  # Tablo başlık metni
+        "tree_selected": "#dbeafe", # Tablo açık mavi seçim
     },
 }
 

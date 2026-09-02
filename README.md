@@ -10,7 +10,7 @@ Web sitelerinden otomatik olarak yapısal veri (tablolar, kartlar, listeler vb.)
 - **İki Farklı Çalışma Motoru:**
   - **Hızlı HTTP:** Standart HTML sayfaları için hafif ve hızlı istek motoru.
   - **Playwright (Chromium):** JavaScript ile sonradan yüklenen dinamik sayfalar (SPA) için tam tarayıcı render desteği.
-- **Karanlık ve Aydınlık Tema:** Gözü yormayan modern sıcak kehribar (Warm Amber) renk paleti ve tek tıkla mod geçişi.
+- **Karanlık ve Aydınlık Tema:** Şık mavi ve siyah (Blue & Black) renk paleti ve tek tıkla mod geçişi.
 - **Canlı Tablo ve Arama:** Çekilen verileri arayüzdeki tabloda görüntüleme ve anlık arama/filtreleme.
 - **Dışa Aktarma:** Verileri tek tıkla `.csv` veya `.json` olarak kaydetme.
 - **CLI & GUI:** İster grafik arayüzden, ister terminalden tek komutla kullanım.
